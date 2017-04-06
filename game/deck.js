@@ -4,54 +4,47 @@
   Updated: 4.5.17
 */
 
-const card_suits = ['clubs', 'diamonds', 'hearts', 'spades'];
-const card_names = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10','J','Q','K'];
-
+class deck{
+  constructor(){
+    this.card_suits = ['clubs', 'diamonds', 'hearts', 'spades'];
+    this.card_names = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10','J','Q','K'];
+    this.deck = [];
+  }
 
 // card class
-function Card(name, suit) {
-    this.name = name;
-    this.suit = suit;
+static Card(name, suit) {
     var card = [];
     card.push(name);
     card.push(suit);
     return card;
 }
 
-// deck class
-function Deck() {
-    this.deck = this.build();
-}
-
 // creats deck of cards using card class
-Deck.prototype.build = function() {
-   var deck = [];
-   for( var s = 0; s < card_suits.length; s++ ) {
-       for( var n = 0; n < card_names.length; n++ ) {
-           deck.push(new Card(card_names[n], card_suits[s]));
+build() {
+   for( var s = 0; s < this.card_suits.length; s++ ) {
+       for( var n = 0; n < this.card_names.length; n++ ) {
+           this.deck.push(deck.Card(this.card_names[n], this.card_suits[s]));
        }
    }
-   return deck;
  };
 
 // accessor class for deck
-Deck.prototype.get = function() {
+get() {
     return this.deck;
 }
 
 // pops desired number of cards
-Deck.prototype.deal = function(num_cards) {
-    return toStr(this.deck.splice(0,num_cards));
-};
+// deal() {
+//     return deck.toStr(this.deck.splice(0,num_cards));
+// };
 
 // pops a single card
-Deck.prototype.pop = function()
-{
-    return toStr(this.deck.splice(0,1));
+pop(){
+    return deck.toStr(this.deck.splice(0,1));
 };
 
 // shuffles deck of cards
-Deck.prototype.shuffle = function() {
+shuffle() {
     //modern Fisher-Yates shuffle
     var decksize = this.deck.length;
     for( var i = (decksize-1); i >= 1; i-- ) {
@@ -65,7 +58,7 @@ Deck.prototype.shuffle = function() {
 };
 
 // prints a given deck (or hand) as a string
-function toStr(deck) {
+static toStr(deck) {
     var deckToString = deck.slice(0);
     for( var i = 0; i < deckToString.length; i++ ) {
       deckToString[i]= deckToString[i].join('-');
@@ -73,15 +66,18 @@ function toStr(deck) {
     return deckToString.join('\n ');
 };
 
+}
 //TESTING CODE
-// var newDeal = new Deck();
-// console.log("Full deck, in order:\n", toStr(newDeal.get()));
-// newDeal.shuffle();
-// console.log("\n");
-// console.log("Full deck, not in order:\n", toStr(newDeal.get()));
-// console.log("\n");
-// console.log("Trump card: ", newDeal.pop());
-// console.log("\n");
+var newDeal = new deck();
+newDeal.build();
+console.log("Full deck, in order:\n", deck.toStr(newDeal.get()));
+newDeal.shuffle();
+console.log("\n");
+console.log("Full deck, not in order:\n", deck.toStr(newDeal.get()));
+console.log("\n");
+console.log("Trump card: ", newDeal.pop());
+console.log("\n");
+console.log("new deck", deck.toStr(newDeal.get()));
 // console.log("Player 1 hand:\n", newDeal.deal(8));
 // console.log("\n\n");
 // console.log("Player 2 hand:\n", newDeal.deal(8));
