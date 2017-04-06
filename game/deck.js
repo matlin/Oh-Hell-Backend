@@ -67,6 +67,8 @@ static toStr(deck) {
 };
 
 }
+//export default deck;
+
 //TESTING CODE
 var newDeal = new deck();
 newDeal.build();

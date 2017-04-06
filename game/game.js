@@ -1,8 +1,9 @@
 // class game initialises and handles the game for Oh-Hell
 //extends admin
 
-import deck from './deck.js';
-
+//get the deck from the deck class
+//import deck from './deck.js';
+const deck = require('./deck.js');
 //game class
 class game {
   constructor(){
@@ -28,5 +29,10 @@ deal(){
   console.log(this.deck);
 }
 
-deal();
+
 }
+
+//TESTING CODE
+
+let newGame = new game();
+newGame.deal();
