@@ -3,16 +3,17 @@
 class Player {
 
   constructor(id){
-    this.id = id;
-    this.hand = [];
-    this.bet;
-    this.tricksWon = 0;
-    this.score = 0;
+    this._id = id;
+    this._hand = [];
+    this._bet;
+    this._tricksWon = 0;
+    this._score = 0;
   }
 
-  setBet(bet){
-    this.bet = bet;
-  }
+  set bet(bet) {this._bet = bet}
+  get bet() {return this._bet}
+  set hand(cards) {this._hand = cards}
+  get hand() {return this._hand}
 
   addTrick(){
     this.tricksWon++;
@@ -22,10 +23,6 @@ class Player {
     this.score += score;
   }
 
-  getHand(){
-    return this.hand;
-  }
-
   popCard(index){
     let card = this.hand[index];
     this.hand.splice(index);
@@ -33,3 +30,5 @@ class Player {
   }
 
 }
+
+module.exports = Player;
