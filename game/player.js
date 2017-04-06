@@ -19,8 +19,9 @@ class Player {
     this.tricksWon++;
   }
 
-  addScore(score){
-    this.score += score;
+  addScore(){
+    if (this._tricksWon === this._bet)
+      this._score += (10 + 2*(this._tricksWon));
   }
 
   popCard(index){
