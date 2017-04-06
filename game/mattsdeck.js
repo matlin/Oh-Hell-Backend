@@ -1,10 +1,10 @@
 class Deck{
 
   constructor(){
-    this.resetDeck();
+    this.reset();
   }
 
-  resetDeck(){
+  reset(){
     this.cards = this.createDeck();
     this.dealer = this.createDealer(this.cards);
     /*this.dealer = {
@@ -26,10 +26,12 @@ class Deck{
   }
 
   deal(n){
+    let hand = [];
     for (let i=0; i<n; i++){
       const card = this.dealer.next();
-      return card.value;
+      hand.push(card.value);
     }
+    return hand;
   }
 
   * createDealer(cards){
@@ -54,10 +56,4 @@ class Deck{
   }
 }
 
-let deck = new Deck();
-for (let i=0; i<52; i++){
-  if (i===14){
-    deck.resetDeck();
-  }
-  console.log(deck.deal(1));
-}
+module.exports = Deck;

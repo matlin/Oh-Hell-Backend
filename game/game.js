@@ -18,15 +18,15 @@ class game {
     this.round = 0;
   }
 
-// methods
+  // methods
 
 
-//dealer function deals the card_suits
-deal(){
-  this.gameDeck = deck;
-  this.gameDeck.shuffle();
-  console.log(this.gameDeck);
-}
+  //dealer function deals the card_suits
+  deal(){
+    this.gameDeck = new deck();
+    this.gameDeck.shuffle();
+    console.log(this.gameDeck);
+  }
 
 
 }
