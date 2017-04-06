@@ -3,7 +3,7 @@
 
 //get the deck from the deck class
 //import deck from './deck.js';
-const deck = require('./mattsdeck.js');
+const Deck = require('./mattsdeck.js');
 //game class
 class game {
   constructor(){
@@ -23,7 +23,7 @@ class game {
 
   //dealer function deals the card_suits
   deal(){
-    this.gameDeck = new deck();
+    this.gameDeck = new Deck();
     this.gameDeck.shuffle();
     console.log(this.gameDeck);
   }
