@@ -7,14 +7,6 @@ class Deck{
   reset(){
     this.cards = this.createDeck();
     this.dealer = this.createDealer(this.cards);
-    /*this.dealer = {
-    *[Symbol.iterator]() {
-        let pre = 0, cur = 1
-        for  {
-            [ pre, cur ] = [ cur, pre + cur ]
-            yield cur
-        }
-    }*/
   }
 
   shuffle(){

@@ -1,4 +1,4 @@
-const Deck = require('./mattsdeck.js');
+const Deck = require('./deck.js');
 const Player = require('./player.js');
 
 class Game{
@@ -24,7 +24,6 @@ class Game{
   }
 
   //used to let players join before game starts
-  //TODO enforce only allowing joining before game starts
   addPlayer(userID){
     if(this.state.players.length < this.state.maxPlayers && !this.state.started){
       let player = new Player(userID);
@@ -60,6 +59,14 @@ class Game{
     }
   }
 
+  bet(player, bet){
+    if (player && bet){
+      this.state.round.next({player, bet});
+    }else{
+      this.state.round.next();
+    }
+  }
+
   deal(numCards){
     this.state.deck.reset();
     this.state.deck.shuffle();
@@ -68,7 +75,9 @@ class Game{
     }
   }
   //a generator that controls the rounds and turns
-  //TODO add tricks and number of cards
+  //TODO add betting and rule for last person to betting
+  //TODO this function is getting out of hand and needs to be broken up some how
+  //     I'm thinking that checking a players turn needs to be it's own function
   * Round(){
       console.log("Starting game");
       for (let round=1; round<=this.state.numRounds; round++){
@@ -76,15 +85,23 @@ class Game{
         const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
         console.log("Dealing " + numCards);
         this.deal(numCards);
+        //get bets from players
+        for (let player of this.state.players){
+          let input;
+          while((input = yield).player !== player || input.bet > numCards || input.bet < 0 || !Number.isInteger(input.bet)){
+            if (input.player !== player){
+              console.log(`Sorry it's ${player._id}'s turn to bet`);
+            }else{
+              console.log('That is not a valid bet');
+            }
+          }
+          console.log(`${player._id} bet ${input.bet}`);
+        }
         for (let trick= 1; trick<=numCards; trick++ ){
           for (let player of this.state.players){
             console.log(`It's ${player._id}'s turn.`);
-            /*let input = {
-              player:"",
-              card:""
-            };*/
-            let input;
-            let card;
+            let input, card;
+            //yield should contain an object containing an instance of player and a cardID
             while ((input = yield).player !== player || !(card = player.play(input.cardID))){
               if (input.player !== player){
                 console.log(`Sorry it's ${player._id}'s turn`);
