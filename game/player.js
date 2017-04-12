@@ -24,6 +24,15 @@ class Player {
       this._score += (10 + 2*(this._tricksWon));
   }
 
+  play(cardID){
+    for (let card of this._hand){
+      if (cardID === card.id){
+        return this._hand.splice(this._hand.findIndex(element => element === card));
+      }
+    }
+    return false;
+  }
+
   popCard(index){
     let card = this.hand[index];
     this.hand.splice(index);

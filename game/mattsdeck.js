@@ -42,13 +42,14 @@ class Deck{
 
   createDeck(){
     let deck = [];
-    const suits = ['clubs', 'diamonds', 'hearts', 'spades'];
-    const vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+    const suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades'];
+    const vals = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10','J','Q','K'];
     for (let suit of suits){
       for (let val of vals){
         deck.push({
           suit: suit,
           value: val,
+          id: val + suit[0],
         });
       }
     }
