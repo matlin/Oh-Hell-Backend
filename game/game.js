@@ -74,6 +74,12 @@ class Game{
       player.hand = this.state.deck.deal(numCards);
     }
   }
+
+  // getPlayerState(userID){
+  //
+  // }
+
+
   //a generator that controls the rounds and turns
   //TODO add betting and rule for last person to betting
   //TODO this function is getting out of hand and needs to be broken up some how

@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var users = new Map();
 
 /* GET users listing. */
 router.get('/', (req, res, next) => {
@@ -8,7 +9,11 @@ router.get('/', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   //check req body for username, email, pw, etc and on success set cookie
-  res.cookie('user', 'value', {expire : new Date() + 9999}).send("Succesfully register");
+  let username = req.body.username;
+  let password = req.body.password;
+  let email = req.body.email;
+
+  res.cookie(username, 'value', {expire : new Date() + 9999}).send("Succesfully register");
 });
 
 router.post('/login', (req, res, next) => {
