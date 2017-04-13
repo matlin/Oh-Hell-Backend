@@ -24,6 +24,16 @@ router.post('/create', (req, res, next) => {
   res.sendStatus(200);
 });
 
+//route handling adding players to a game
+//body of request has to have the cookie for user-id
+//sends confirmations
+router.put('/:id/join', (req,res,next) => {
+  let userID = req.cookies.userID; //still dont know how cookies work
+  let currentGame = activeGames[req.params.id];
+  currentGame.addPlayer(userID);
+  res.sendStatus(200); //this will evenetually send back who else has joined the game. sockets?
+});
+
 // route handling starting a pre-existing game
 // TODO: is the creator of the game the only person who can start it?
 // Sends back the state of game that's just starting
@@ -58,7 +68,7 @@ router.put('/:id/play', (req, res, next) => {
 });
 
 // route handling playing a card
-// request body must have a card object. 
+// request body must have a card object.
 // TODO: add functionality to Game class that checks if bet amount is OK
 // sends back a message and gamestate. Message will describes whether the bet was successful.
 router.put('/:id/bet', (req, res, next) => {
