@@ -15,7 +15,7 @@ router.post('/login', (req, res, next) => {
   //check credentials then update cookie
 });
 
-app.get('/logout', (req,res, next) => {
+router.get('/logout', (req,res, next) => {
      clearCookie('cookie_name');
      res.send('Succesfully logged out.');
 });

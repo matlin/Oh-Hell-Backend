@@ -4,12 +4,15 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const http = require('http');
+const app = express();
+const server = http.createServer(app);
 
 const index = require('./routes/index');
 const users = require('./routes/users');
 const game = require('./routes/game');
 
-const app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -46,3 +49,6 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+server.listen(4100);
+console.log('Listening on port %d', server.address().port);

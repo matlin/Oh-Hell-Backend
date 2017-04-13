@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
 router.post('/create', (req, res, next) => {
   let minPlayers = req.body.minPlayers;
   let maxPlayers = req.body.maxPlayers;
-  let userID = req.cookies.userID; //placeholder because we don't know how cookies work
+  let userID = "Kevin"; //placeholder because we don't know how cookies work
   let newGame = new Game(idCounter, minPlayers, maxPlayers)
   newGame.addPlayer(userID);
   activeGames[idCounter] = newGame;
@@ -28,9 +28,10 @@ router.post('/create', (req, res, next) => {
 //body of request has to have the cookie for user-id
 //sends confirmations
 router.put('/:id/join', (req,res,next) => {
-  let userID = req.cookies.userID; //still dont know how cookies work
+  let userID = "Mark"; //still dont know how cookies work
   let currentGame = activeGames[req.params.id];
   currentGame.addPlayer(userID);
+  console.log(currentGame);
   res.sendStatus(200); //this will evenetually send back who else has joined the game. sockets?
 });
 
@@ -47,7 +48,7 @@ router.put('/:id/start', (req, res, next) => {
 
 // route handling updating all users besides the one who played or bet (probably)
 // sends back the state of the game
-router.get('/:id'), (req, res, next) => {
+router.get('/:id', (req, res, next) => {
   let currentGame = activeGames[req.params.id];
   let userID = req.cookies.userID; //placeholder because we don't know how cookies work
   res.send(currentGame.getPlayerState(userID));
