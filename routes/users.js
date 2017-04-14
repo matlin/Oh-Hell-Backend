@@ -1,6 +1,7 @@
-var express = require('express');
-var router = express.Router();
-var users = new Map();
+const express = require('express');
+const shortid = require('shortid');
+const router = express.Router();
+let users = {};
 
 /* GET users listing. */
 router.get('/', (req, res, next) => {
@@ -9,19 +10,34 @@ router.get('/', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   //check req body for username, email, pw, etc and on success set cookie
-  let username = req.body.username;
-  let password = req.body.password;
-  let email = req.body.email;
-
-  res.cookie(username, 'value', {expire : new Date() + 9999}).send("Succesfully register");
+  const username = req.body.username;
+  const password = req.body.password;
+  const email = req.body.email;
+  const id = shortid.generate();
+  users[id] = {username:username,password:password,email:email};
+  res.cookie('id', id, {expire : new Date() + 9999}).send("Succesfully register");
 });
 
 router.post('/login', (req, res, next) => {
-  //check credentials then update cookie
+  console.log(users);
+  if (req.cookies.id && users[req.cookies.id]){
+    res.send("Welcome back " + users[req.cookies.id].username);
+  } else {
+    const username = req.body.username;
+    const password = req.body.password;
+    for (let id in users){
+      if (users[id].username === username && users[id].password === password){
+        res.cookie('id', id, {expire : new Date() + 9999}).send("Logged in");
+        return
+      }
+    }
+    res.status = 401;
+    res.send("Email or password do not match.");
+  }
 });
 
 router.get('/logout', (req,res, next) => {
-     clearCookie('cookie_name');
+     res.clearCookie('id');
      res.send('Succesfully logged out.');
 });
 
