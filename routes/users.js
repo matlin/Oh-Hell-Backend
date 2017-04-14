@@ -10,12 +10,17 @@ router.get('/', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   //check req body for username, email, pw, etc and on success set cookie
-  const username = req.body.username;
-  const password = req.body.password;
-  const email = req.body.email;
-  const id = shortid.generate();
-  users[id] = {username:username,password:password,email:email};
-  res.cookie('id', id, {expire : new Date() + 9999}).send("Succesfully register");
+  if (req.body.username && req.body.password && req.body.email){
+    const username = req.body.username;
+    const password = req.body.password;
+    const email = req.body.email;
+    const id = shortid.generate();
+    users[id] = {username:username,password:password,email:email};
+    res.cookie('id', id, {expire : new Date() + 9999}).send("Succesfully register");
+  } else {
+    res.status = 422;
+    res.send("Registration information incomplete");
+  }
 });
 
 router.post('/login', (req, res, next) => {
