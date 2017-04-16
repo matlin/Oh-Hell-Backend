@@ -231,7 +231,20 @@ class Game{
 // assign a score based on this comparison
 // best score if tricksWon === bets the player made
 
-
+  updateScores(){
+    for (let playerID in this.state.bets){
+      //create round in score if doesn't exist
+      if(!this.state.scores.round[this.state.round]){
+        this.state.scores.round[this.state.round] = {};
+      }
+      //reward points for meeting contract or 0 for not
+      if (this.state.bets[playerID] === this.state.tricks[playerID]){
+          this.state.scores.round[this.state.round][playerID] = 10 + 2*this.state.tricks[playerID];
+      } else {
+        this.state.scores.round[playerID] = 0;
+      }
+    }
+  }
 
 }
 
