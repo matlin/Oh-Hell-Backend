@@ -143,9 +143,26 @@ class Game{
 // assign a score based on this comparison
 // best score if tricksWon === bets the player made
 
-
+updateScores(){
+  for (let playerID in this.state.bets){
+    //create round in score if doesn't exist
+    if(!this.state.scores.round[this.state.round]){
+      this.state.scores.round[this.state.round] = {};
+    }
+    //reward points for meeting contract or 0 for not
+    if (this.state.bets[playerID] === this.state.tricks[playerID]){
+        this.state.scores.round[this.state.round][playerID] = 10 + 2*this.state.tricks[playerID];
+    } else {
+      this.state.scores.round[playerID] = 0;
+    }
+  }
+}
 
 }
+
+
+
+
 
 module.exports = Game;
 
@@ -164,14 +181,30 @@ game.play('Jon', "Ace of Clubs"); //Jon now places 5
 */
 
 let game = new Game();
-let ben = game.addPlayer('ben');
-let matt = game.addPlayer('matt');
-game.start();
-//console.log(game);
-console.log(ben.hand);
-console.log(matt.hand);
-game.bet(matt, "5K");
-game.bet(ben, 1);
-game.bet(matt, 1);
-game.play(ben, ben.hand[0].id);
-game.play(matt, matt.hand[0].id);
+// let ben = game.addPlayer('ben');
+// let matt = game.addPlayer('matt');
+// game.start();
+// //console.log(game);
+// console.log(ben.hand);
+// console.log(matt.hand);
+// game.bet(matt, "5K");
+// game.bet(ben, 1);
+// game.bet(matt, 1);
+// game.play(ben, ben.hand[0].id);
+// game.play(matt, matt.hand[0].id);
+
+game.state.round = 3;
+game.state.bets = {
+  'matt':2,
+  'ben':0,
+}
+game.state.tricks = {
+  'ben':0,
+  'matt':3,
+}
+game.state.scores = {
+  round:{}
+}
+
+game.updateScores();
+console.log(game.state.scores);
