@@ -10,6 +10,7 @@ class Player {
     this._score = 0;
   }
 
+  get id() {return this._id}
   set bet(bet) {this._bet = bet}
   get bet() {return this._bet}
   set hand(cards) {this._hand = cards}
@@ -27,7 +28,7 @@ class Player {
   play(cardID){
     for (let card of this._hand){
       if (cardID === card.id){
-        return this._hand.splice(this._hand.findIndex(element => element === card));
+        return this._hand.splice(this._hand.findIndex(element => element === card))[0];
       }
     }
     return false;
