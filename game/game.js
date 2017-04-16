@@ -1,5 +1,6 @@
 const Deck = require('./deck.js');
 const Player = require('./player.js');
+const Card = require('./card.js');
 
 class Game{
   constructor(){
@@ -22,6 +23,7 @@ class Game{
       scores: {round:{}},
       bets:{},
       handSize:0,
+      tricks: new Map(),
       //lastToBet
     };
   }
@@ -94,6 +96,7 @@ class Game{
     for (let player of this.state.players){
       player.hand = this.state.deck.deal(numCards);
     }
+    this.state.trumpCard = this.state.deck.deal(1)[0];
   }
   //a generator that controls the rounds and turns
 
@@ -124,10 +127,11 @@ class Game{
         console.log("Starting round " + round);
         const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
         this.state.handSize = numCards;
-        console.log("Dealing " + numCards);
-        this.deal(numCards);
         this.state.dealer = this.state.players[Math.floor(Math.random() * this.state.players.length)];
         console.log(`${this.state.dealer.id} is dealer`);
+        console.log("Dealing " + numCards);
+        this.deal(numCards);
+        console.log(`Trump card is ${this.state.trumpCard.value} of ${this.state.trumpCard.suit}`);
         this.state.betting = true;
         let betting = this.BetHandler();
         //yield;
@@ -169,7 +173,10 @@ class Game{
           let card = this.state.cardsInPlay.get(player);
           console.log(`${player.id} played ${card.value} of ${card.suit}`);
         }
-        //check who wins that trick
+        const winner = this.getTrickWinner();
+        const winningCard = this.state.cardsInPlay.get(winner);
+        console.log(`${winner.id} won with ${winningCard.value} of ${winningCard.suit} wins`);
+        this.state.tricks.set(winner, this.state.tricks.get(winner) + 1);
       }
   }
 
@@ -230,6 +237,17 @@ class Game{
 // for each player check how many tricks they've won and compare to their between
 // assign a score based on this comparison
 // best score if tricksWon === bets the player made
+
+  getTrickWinner(){
+    const winningCard = Card.max(Array.from(this.state.cardsInPlay.values()), this.state.trumpCard.suit);
+    let winner;
+    for (let entry of this.state.cardsInPlay.entries()){
+      if (entry[1] === winningCard){
+        winner = entry[0];
+      }
+    }
+    return winner;
+  }
 
   updateScores(){
     for (let playerID in this.state.bets){
