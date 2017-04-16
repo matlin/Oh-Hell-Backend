@@ -78,6 +78,13 @@ class Game{
   //TODO add betting and rule for last person to betting
   //TODO this function is getting out of hand and needs to be broken up some how
   //     I'm thinking that checking a players turn needs to be it's own function
+
+  // functions to define elsewhere to make round shorter
+  // getBets -> after all bets have been gathered should allow people to play tricks
+  // playTrick --> should go through each player to get 1 card, at end should call function to check: checkTrickWin
+  // --> should assign scores, or call function to assign scores: getScores
+  // --> after a single trick has been played we should continuously play tricks and assign scores until there are no more cards
+
   * Round(){
       console.log("Starting game");
       for (let round=1; round<=this.state.numRounds; round++){
@@ -115,6 +122,28 @@ class Game{
       }
       console.log("Game over!");
   }
+
+  // getBets
+  // cyce through every player and allow them to choose a number of bets
+  //should not be able to bet more than # cards in hand
+  //minimum bet should be 0
+  //everyone must make a bet, in order
+
+  // checkTrickWin
+  // check if everyone has played?
+  // look through the array of cards played for this trick
+  // if suit matches trump card then this takes precidence and max val in this suit wins
+  // otherwise the max value card wins
+  // if there are 2 identical cards then higher value suit wins?
+  // when we've cycled through the cards in the trick give the player who's card it was the appropritate scores
+  // official score is assigned at end of round so this should be used to help us keep track of each player's tricks won
+
+// scores
+// for each player check how many tricks they've won and compare to their between
+// assign a score based on this comparison
+// best score if tricksWon === bets the player made
+
+
 
 }
 
