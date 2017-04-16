@@ -3,8 +3,8 @@ class Card{
     if (Card.suits.indexOf(suit) !== -1 && Card.values.indexOf(value) !== -1){
       return ({
         suit: suit,
-        value: val,
-        id: val + suit[0],
+        value: value,
+        id: value + suit[0],
       });
     }
     return false;
@@ -22,11 +22,16 @@ class Card{
     //assumes first card in array is card that was lead
     let largest = cards.shift();
     let lead = largest.suit;
-    for (card in cards){
-      if (card.suit === trump && largest.suit !== trump) largest = card;
-      if else (card.suit !== largest.suit) continue;
-      else largest = (largest.val < card.val ? card : largest);
+    for (let card of cards){
+      if (card.suit === trump && largest.suit !== trump){
+        largest = card;
+      } else if (card.suit !== largest.suit){
+        continue;
+      } else {
+        largest = (largest.value < card.value ? card : largest);
+      }
     }
+    return largest;
   }
 }
 

@@ -10,6 +10,7 @@ class Player {
     this._score = 0;
   }
 
+  get id() {return this._id}
   set bet(bet) {this._bet = bet}
   get bet() {return this._bet}
   set hand(cards) {this._hand = cards}
