@@ -109,7 +109,6 @@ class Game{
                 console.log('You dont have that card');
               }
             }
-            console.log(card);
             console.log(`${player._id} played ${card.value} of ${card.suit}`);
           }
         }
@@ -142,7 +141,8 @@ game.start();
 //console.log(game);
 console.log(ben.hand);
 console.log(matt.hand);
-game.play(matt, "5K");
-game.play(ben, "AH");
-//game.play(ben, "5 of clubs");
-//game.play(matt, "10 of hearts");
+game.bet(matt, "5K");
+game.bet(ben, 1);
+game.bet(matt, 1);
+game.play(ben, ben.hand[0].id);
+game.play(matt, matt.hand[0].id);
