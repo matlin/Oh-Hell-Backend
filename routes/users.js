@@ -11,43 +11,46 @@ db.once('open', function() {
   console.log("Users routes are connected!")
 });
 
-const userSchema = mongoose.Schema({
+const User = mongoose.model('User', {
   username: String,
   email: String,
   password: String
 });
-
-const User = mongoose.model('User', userSchema);
-
-const phil = new User({username: "pbohlman", email: "pbohlman@gmail.com", password: "philspwd"});
-
-/*
-phil.save(function (err) {
-  if (err) return console.error(err);
-});
-*/
-
-User.find(function (err, users) {
-  if (err) return console.error(err);
-  console.log(users);
-});
-
-let users = {};
 
 /* GET users listing. */
 router.get('/', (req, res, next) => {
   res.send('respond with a resource');
 });
 
+// TODO: make user cookie a hashed ID, not the ID assigned by the database.
 router.post('/register', (req, res, next) => {
   //check req body for username, email, pw, etc and on success set cookie
   if (req.body.username && req.body.password && req.body.email){
     const username = req.body.username;
     const password = req.body.password;
     const email = req.body.email;
-    const id = shortid.generate();
-    users[id] = {username:username,password:password,email:email};
-    res.cookie('id', id, {expire : new Date() + 9999}).send("Succesfully register");
+    User.findOne({email: email}, function (err, user) {
+      if (err) return console.error(err);
+      // is the email we're trying to register with already in the db?
+      if (!user) {
+        const newUser = new User({username, email, password});
+        newUser.save(function (err) {
+          if (err) return console.error(err);
+          // lets get the entry we just added out of the db to assign a cookie
+          User.findOne({email: email}, function (err, user) {
+            if (err) return console.error(err);
+            if (user) {
+              res.cookie('id', user._id, {expire : new Date() + 9999}).send("Succesfully register");
+            }
+            else console.log("couldn't find our new entry");
+          });
+        });
+      } else {
+        console.log("An error occurred during registration");
+        res.status = 422;
+        res.send("An error occurred during registration");
+      }
+    });
   } else {
     res.status = 422;
     res.send("Registration information incomplete");
