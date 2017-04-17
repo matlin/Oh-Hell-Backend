@@ -1,6 +1,16 @@
-let express = require('express');
-let router = express.Router();
-let Game = require('../game/game.js')
+const express = require('express');
+const router = express.Router();
+const Game = require('../game/game.js')
+const mongoose = require('mongoose');
+let db = mongoose.connection;
+
+mongoose.connect('mongodb://localhost:5000');
+
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("Users routes are connected!")
+});
+
 
 let activeGames = new Map();
 let idCounter = 0;

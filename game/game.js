@@ -288,6 +288,7 @@ game.play('Sarah', "5 of Diamonds"); //shouldn't be allowed to play out of turn
 game.play('Jon', "Ace of Clubs"); //Jon now places 5
 */
 
+/*
 let game = new Game();
 let ben = game.addPlayer('ben');
 let matt = game.addPlayer('matt');
@@ -297,3 +298,4 @@ game.bet(game.state.turn, 1);
 game.bet(game.state.turn, 1);
 game.play(game.state.turn, game.state.turn.hand[0].id);
 game.play(game.state.turn, game.state.turn.hand[0].id);
+*/

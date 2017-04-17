@@ -1,6 +1,37 @@
 const express = require('express');
 const shortid = require('shortid');
+const mongoose = require('mongoose');
 const router = express.Router();
+
+mongoose.connect('mongodb://localhost:5000/ohell/');
+
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("Users routes are connected!")
+});
+
+const userSchema = mongoose.Schema({
+  username: String,
+  email: String,
+  password: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+const phil = new User({username: "pbohlman", email: "pbohlman@gmail.com", password: "philspwd"});
+
+/*
+phil.save(function (err) {
+  if (err) return console.error(err);
+});
+*/
+
+User.find(function (err, users) {
+  if (err) return console.error(err);
+  console.log(users);
+});
+
 let users = {};
 
 /* GET users listing. */
