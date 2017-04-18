@@ -28,7 +28,8 @@ class Player {
   play(cardID){
     for (let card of this._hand){
       if (cardID === card.id){
-        return this._hand.splice(this._hand.findIndex(element => element === card))[0];
+        const result = this._hand.splice(this._hand.findIndex(element => element === card), 1)[0];
+        return result;
       }
     }
     return false;

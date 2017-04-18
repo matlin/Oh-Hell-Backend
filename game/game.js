@@ -60,7 +60,7 @@ class Game{
     if (player && cardID){
       let card;
       if(!this.state.betting && player === this.state.turn && (card = player.play(cardID))){
-        this.state.cardsInPlay.set(player, card);
+        this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       }else{
         if (player !== this.state.turn){
@@ -116,7 +116,6 @@ class Game{
   // --> after a single trick has been played we should continuously play tricks and assign scores until there are no more cards
 
   * GameHandler(){
-      console.log("Starting game");
       let handler = RoundHandler();
       yield;
       let round = handler.next();
@@ -124,17 +123,26 @@ class Game{
         yield;
         round = handler.next();
       }
-      console.log("Game over!");
+  }
+
+  * DealerHandler(){
+      let i = Math.floor(Math.random() * this.state.players.length);
+      while(true){
+        yield this.state.players[i % this.state.players.length].id;
+        i++;
+      }
   }
 
   * RoundHandler(){
+      console.log("Starting game");
+      const dealerHandler = this.DealerHandler();
       for (this.state.round=1; this.state.round<=this.state.numRounds; this.state.round++){
         let round = this.state.round;
-        console.log("Starting round " + round);
+        console.log("###STARTING ROUND " + round);
         const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
         this.state.handSize = numCards;
-        this.state.dealer = this.state.players[Math.floor(Math.random() * this.state.players.length)];
-        console.log(`${this.state.dealer.id} is dealer`);
+        this.state.dealer = dealerHandler.next().value;
+        console.log(`${this.state.dealer} is dealer`);
         console.log("Dealing " + numCards);
         this.deal(numCards);
         console.log(`Trump card is ${this.state.trumpCard.value} of ${this.state.trumpCard.suit}`);
@@ -153,14 +161,18 @@ class Game{
           yield;
           trick = tricks.next();
         }
+        console.log('Round tricks', this.state.tricks);
+        this.updateScores();
+        console.log('score', this.state.scores);
+        this.state.tricks.clear();
         //check who wins that round
       }
       console.log("Game over");
   }
   //needs to start with left of the dealer
   * BetHandler(){
-      const offset = this.state.players.findIndex(player => player === this.state.dealer);
-      for (let i=0; i<this.state.players.length; i++){
+      const offset = this.state.players.findIndex(player => player.id === this.state.dealer);
+      for (let i=1; i<=this.state.players.length; i++){
         let player = this.state.players[(i+offset) % this.state.players.length];
         this.state.turn = player;
         console.log(`${player.id}'s turn to bet`);
@@ -168,81 +180,27 @@ class Game{
         console.log(`${player.id} bet ${this.state.bets[player.id]}`);
       }
   }
+
   * TrickHandler(numCards){
-      const offset = this.state.players.findIndex(player => player === this.state.dealer);
+      const offset = this.state.players.findIndex(player => player.id === this.state.dealer);
       for (let trick= 1; trick<=numCards; trick++ ){
-        for (let i=0; i<this.state.players.length; i++){
+        console.log(`Playing trick ${trick} of ${numCards}`);
+        for (let i=1; i<=this.state.players.length; i++){
           let player = this.state.players[(i+offset) % this.state.players.length];
           this.state.turn = player;
           console.log(`${player.id}'s turn to play`);
           yield;
-          let card = this.state.cardsInPlay.get(player);
+          let card = this.state.cardsInPlay.get(player.id);
           console.log(`${player.id} played ${card.value} of ${card.suit}`);
         }
-        const winner = this.getTrickWinner();
-        const winningCard = this.state.cardsInPlay.get(winner);
-        console.log(`${winner.id} won with ${winningCard.value} of ${winningCard.suit} wins`);
-        this.state.tricks.set(winner, this.state.tricks.get(winner) + 1);
+        const winnerID = this.getTrickWinner();
+        const winningCard = this.state.cardsInPlay.get(winnerID);
+        console.log(`${winnerID} won with ${winningCard.value} of ${winningCard.suit} wins`);
+        const winnerTricks = this.state.tricks.has(winnerID) ? this.state.tricks.get(winnerID) : 0;
+        this.state.tricks.set(winnerID, winnerTricks + 1);
+        this.state.cardsInPlay.clear();
       }
   }
-
-  * Round(){
-      console.log("Starting game");
-      for (let round=1; round<=this.state.numRounds; round++){
-        console.log("Starting round " + round);
-        const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
-        console.log("Dealing " + numCards);
-        this.deal(numCards);
-        //get bets from players
-        for (let player of this.state.players){
-          let input;
-          while((input = yield).player !== player || input.bet > numCards || input.bet < 0 || !Number.isInteger(input.bet)){
-            if (input.player !== player){
-              console.log(`Sorry it's ${player._id}'s turn to bet`);
-            }else{
-              console.log('That is not a valid bet');
-            }
-          }
-          console.log(`${player._id} bet ${input.bet}`);
-        }
-        for (let trick= 1; trick<=numCards; trick++ ){
-          for (let player of this.state.players){
-            console.log(`It's ${player._id}'s turn.`);
-            let input, card;
-            //yield should contain an object containing an instance of player and a cardID
-            while ((input = yield).player !== player || !(card = player.play(input.cardID))){
-              if (input.player !== player){
-                console.log(`Sorry it's ${player._id}'s turn`);
-              }else{
-                console.log('You dont have that card');
-              }
-            }
-            console.log(`${player._id} played ${card.value} of ${card.suit}`);
-          }
-        }
-      }
-      console.log("Game over!");
-  }
-
-  // getBets
-  // cyce through every player and allow them to choose a number of bets
-  //should not be able to bet more than # cards in hand
-  //minimum bet should be 0
-  //everyone must make a bet, in order
-
-  // checkTrickWin
-  // check if everyone has played?
-  // look through the array of cards played for this trick
-  // if suit matches trump card then this takes precidence and max val in this suit wins
-  // otherwise the max value card wins
-  // if there are 2 identical cards then higher value suit wins?
-  // when we've cycled through the cards in the trick give the player who's card it was the appropritate scores
-  // official score is assigned at end of round so this should be used to help us keep track of each player's tricks won
-
-// scores
-// for each player check how many tricks they've won and compare to their between
-// assign a score based on this comparison
-// best score if tricksWon === bets the player made
 
   getTrickWinner(){
     const winningCard = Card.max(Array.from(this.state.cardsInPlay.values()), this.state.trumpCard.suit);
@@ -262,10 +220,10 @@ class Game{
         this.state.scores.round[this.state.round] = {};
       }
       //reward points for meeting contract or 0 for not
-      if (this.state.bets[playerID] === this.state.tricks[playerID]){
-          this.state.scores.round[this.state.round][playerID] = 10 + 2*this.state.tricks[playerID];
+      if (this.state.bets[playerID] === this.state.tricks.get(playerID)){
+          this.state.scores.round[this.state.round][playerID] = 10 + 2*this.state.tricks.get(playerID);
       } else {
-        this.state.scores.round[playerID] = 0;
+        this.state.scores.round[this.state.round][playerID] = 0;
       }
     }
   }
@@ -292,6 +250,12 @@ game.play('Jon', "Ace of Clubs"); //Jon now places 5
 let game = new Game();
 let ben = game.addPlayer('ben');
 let matt = game.addPlayer('matt');
+let phil = game.addPlayer('phil');
+let josh = game.addPlayer('josh');
+let ben1 = game.addPlayer('ben1');
+let matt1 = game.addPlayer('matt1');
+let phil1 = game.addPlayer('phil1');
+let josh1 = game.addPlayer('josh1');
 game.start();
 //console.log(game);
 game.bet(game.state.turn, 1);
@@ -299,3 +263,31 @@ game.bet(game.state.turn, 1);
 game.play(game.state.turn, game.state.turn.hand[0].id);
 game.play(game.state.turn, game.state.turn.hand[0].id);
 */
+// game.bet(game.state.turn, 1);
+// game.bet(game.state.turn, 1);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+// game.bet(game.state.turn, 1);
+// game.bet(game.state.turn, 1);
+// //console.log(matt.hand);
+// //console.log(ben.hand);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+// console.log(game.state.cardsInPlay.size);
+// console.log(matt.hand);
+// console.log(ben.hand);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+// game.play(game.state.turn, game.state.turn.hand[0].id);
+
+// for (let i=1; i<=game.state.numRounds; i++){
+//   const bet = i % game.state.maxHandSize;
+//   game.bet(game.state.turn, bet);
+//   game.bet(game.state.turn, bet);
+//   for (let j=0; j<i; j++){
+//     for (let k=0; k<game.state.players.length; k++){
+//       let player = game.state.turn;
+//       let card = game.state.turn.hand[0];
+//       game.play(player, card.id);
+//     }
+//   }
+// }
