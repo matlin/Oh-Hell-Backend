@@ -35,6 +35,7 @@ router.post('/register', (req, res, next) => {
     User.findOne({email}, function (err, user) {
       if (err) return console.error(err);
       // is the email we're trying to register with already in the db?
+      console.log('Registering', username, password, email, user);
       if (!user) {
         const newUser = new User({username, email, password});
         newUser.save(function (err) {

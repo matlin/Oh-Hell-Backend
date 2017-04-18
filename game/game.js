@@ -29,9 +29,9 @@ class Game{
   }
 
   //used to let players join before game starts
-  addPlayer(userID){
+  addPlayer(userID, username){
     if(this.state.players.length < this.state.maxPlayers && !this.state.started){
-      let player = new Player(userID);
+      let player = new Player(userID, username);
       this.state.players.push(player);
       if (this.state.players.length === this.state.maxPlayers){
         this.start();
@@ -55,16 +55,28 @@ class Game{
     this.state.roundHandler.next();
   }
 
+  getPlayer(id){
+    for(let player of this.state.players){
+      if (player.id === id){
+        return player;
+      }
+    }
+  }
+
   //all plays must be associated with a player to enforcce turns
   play(player, cardID){
     if (player && cardID){
       let card;
+      //so function can accept id string or player object
+      if (!(player instanceof Player)){
+        player = this.getPlayer(player);
+      }
       if(!this.state.betting && player === this.state.turn && (card = player.play(cardID))){
         this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       }else{
         if (player !== this.state.turn){
-          console.log(`Sorry it's ${this.state.turn.id}'s turn to play`);
+          console.log(`Sorry it's ${this.state.turn.username}'s turn to play`);
         }else if (this.state.betting){
           console.log('The game is only accepting bets at this time');
         }else{
@@ -76,13 +88,17 @@ class Game{
 
   //TODO add betting and rule for last person to betting
   bet(player, bet){
-    if (player && bet){
+    if (player != null && bet != null){
+        if (!(player instanceof Player)){
+          player = this.getPlayer(player);
+        }
+        console.log(player);
         if(player === this.state.turn && bet <= this.state.handSize && bet > 0 && Number.isInteger(bet) && this.state.betting){
           this.state.bets[player.id] = bet;
           this.state.roundHandler.next();
         }else{
           if (player !== this.state.turn){
-            console.log(`Sorry it's ${this.state.turn.id}'s turn to bet`);
+            console.log(`Sorry it's ${this.state.turn.username}'s turn to bet`);
           }else{
             console.log('That is not a valid bet');
           }
@@ -142,7 +158,7 @@ class Game{
         const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
         this.state.handSize = numCards;
         this.state.dealer = dealerHandler.next().value;
-        console.log(`${this.state.dealer} is dealer`);
+        console.log(`${this.getPlayer(this.state.dealer).username} is dealer`);
         console.log("Dealing " + numCards);
         this.deal(numCards);
         console.log(`Trump card is ${this.state.trumpCard.value} of ${this.state.trumpCard.suit}`);
@@ -175,9 +191,9 @@ class Game{
       for (let i=1; i<=this.state.players.length; i++){
         let player = this.state.players[(i+offset) % this.state.players.length];
         this.state.turn = player;
-        console.log(`${player.id}'s turn to bet`);
+        console.log(`${player.username}'s turn to bet`);
         yield;
-        console.log(`${player.id} bet ${this.state.bets[player.id]}`);
+        console.log(`${player.username} bet ${this.state.bets[player.id]}`);
       }
   }
 
@@ -188,14 +204,14 @@ class Game{
         for (let i=1; i<=this.state.players.length; i++){
           let player = this.state.players[(i+offset) % this.state.players.length];
           this.state.turn = player;
-          console.log(`${player.id}'s turn to play`);
+          console.log(`${player.username}'s turn to play`);
           yield;
           let card = this.state.cardsInPlay.get(player.id);
-          console.log(`${player.id} played ${card.value} of ${card.suit}`);
+          console.log(`${player.username} played ${card.value} of ${card.suit}`);
         }
         const winnerID = this.getTrickWinner();
         const winningCard = this.state.cardsInPlay.get(winnerID);
-        console.log(`${winnerID} won with ${winningCard.value} of ${winningCard.suit} wins`);
+        console.log(`${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit} wins`);
         const winnerTricks = this.state.tricks.has(winnerID) ? this.state.tricks.get(winnerID) : 0;
         this.state.tricks.set(winnerID, winnerTricks + 1);
         this.state.cardsInPlay.clear();

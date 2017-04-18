@@ -2,12 +2,13 @@
 
 class Player {
 
-  constructor(id){
+  constructor(id, username){
     this._id = id;
     this._hand = [];
     this._bet;
     this._tricksWon = 0;
     this._score = 0;
+    this._username = username;
   }
 
   get id() {return this._id}
@@ -15,6 +16,7 @@ class Player {
   get bet() {return this._bet}
   set hand(cards) {this._hand = cards}
   get hand() {return this._hand}
+  get username() {return this._username}
 
   addTrick(){
     this.tricksWon++;
