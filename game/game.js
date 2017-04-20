@@ -92,8 +92,8 @@ class Game{
         if (!(player instanceof Player)){
           player = this.getPlayer(player);
         }
-        console.log(player);
-        if(player === this.state.turn && bet <= this.state.handSize && bet > 0 && Number.isInteger(bet) && this.state.betting){
+        //console.log(player);
+        if(player === this.state.turn && bet <= this.state.handSize && bet >= 0 && Number.isInteger(bet) && this.state.betting){
           this.state.bets[player.id] = bet;
           this.state.roundHandler.next();
         }else{
@@ -154,14 +154,14 @@ class Game{
       const dealerHandler = this.DealerHandler();
       for (this.state.round=1; this.state.round<=this.state.numRounds; this.state.round++){
         let round = this.state.round;
-        console.log("###STARTING ROUND " + round);
+        console.log("#### STARTING ROUND " + round);
         const numCards = round <= this.state.maxHandSize ? round : (this.state.maxHandSize - (round % this.state.maxHandSize));
         this.state.handSize = numCards;
         this.state.dealer = dealerHandler.next().value;
-        console.log(`${this.getPlayer(this.state.dealer).username} is dealer`);
-        console.log("Dealing " + numCards);
+        console.log(`## DEALER: ${this.getPlayer(this.state.dealer).username} `);
+        console.log("## DEALING OUT: " + numCards);
         this.deal(numCards);
-        console.log(`Trump card is ${this.state.trumpCard.value} of ${this.state.trumpCard.suit}`);
+        console.log(`## TRUMP CARD IS ${this.state.trumpCard.value} of ${this.state.trumpCard.suit}`);
         this.state.betting = true;
         let betting = this.BetHandler();
         //yield;

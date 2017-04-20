@@ -16,6 +16,7 @@ const User = mongoose.model('User');
 
 
 let activeGames = new Map();
+activeGames.set('test', new Game());
 
 router.get('/', function(req, res, next) {
   res.send('No game has been created.');
@@ -74,7 +75,7 @@ router.put('/:id/start', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.cookies.id || "Mark";
   currentGame.start(); //Do we need to check who is trying to start the game?
-  console.log(currentGame);
+  //console.log(currentGame);
   // update the DB
   if (currentGame){
     res.send('Game started');
@@ -116,6 +117,7 @@ router.get('/:id/hand', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.cookies.id; //placeholder because we don't know how cookies work
   let hand = currentGame.getPlayer(userID).hand;
+  console.log(currentGame.getPlayer(userID).username + " retrieved their hand.");
   res.send(JSON.stringify(hand));
 });
 
