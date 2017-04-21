@@ -26,9 +26,8 @@ router.get('/', function(req, res, next) {
 // Body of request must specify min and max number of players in this game.
 // Sends back confirmation
 router.post('/create', (req, res, next) => {
-  //let minPlayers = req.body.minPlayers;
   let maxPlayers = req.body.maxPlayers;
-  let userID = req.cookies.id || "User";
+  let userID = req.cookies.id;
   let gameID = shortid.generate();
   let newGame = new Game(maxPlayers);
   User.findOne({_id : userID}, (err, user) => {
@@ -53,19 +52,20 @@ router.post('/create', (req, res, next) => {
 router.put('/:id/join', (req,res,next) => {
   let userID = req.cookies.id;
   let currentGame = activeGames.get(req.params.id);
+  let message;
   User.findOne({_id : userID}, (err, user) => {
     if(user){
       const username = user.username;
       const gameID = req.params.id;
-      currentGame.addPlayer(userID, username);
-      console.log(`${username} joined game ${gameID}`);
+      message = currentGame.addPlayer(userID, username);
       res.send(gameID);
     }else{
-      console.log("Could not get user");
+      message = "An error occurred while joining game. Could not get user.";
       res.status = 422;
-      res.send("An error occurred while joining game");
     }
   });
+  console.log(message);
+  res.send(message);
 });
 
 // route handling starting a pre-existing game
@@ -73,9 +73,8 @@ router.put('/:id/join', (req,res,next) => {
 // Sends back the state of game that's just starting
 router.put('/:id/start', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id || "Mark";
+  let userID = req.cookies.id;
   currentGame.start(); //Do we need to check who is trying to start the game?
-  //console.log(currentGame);
   // update the DB
   if (currentGame){
     res.send('Game started');
@@ -110,7 +109,7 @@ router.put('/:id/play', (req, res, next) => {
   let message = currentGame.play(userID, card);
   // update the DB
   //res.send({message: message, state: currentGame.getPlayerState(userID)});
-  res.send('You tried to play');
+  res.send(message);
 });
 
 router.get('/:id/hand', (req, res, next) => {
@@ -133,7 +132,7 @@ router.put('/:id/bet', (req, res, next) => {
   let message = currentGame.bet(userID, +betAmount);
   // update the DB
   if (currentGame){
-    res.send("Bet complete");
+    res.send(message);
   }else{
     res.send("No game found");
   }

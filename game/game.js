@@ -30,19 +30,23 @@ class Game{
 
   //used to let players join before game starts
   addPlayer(userID, username){
+    let message;
     if(this.state.players.length < this.state.maxPlayers && !this.state.started){
       let player = new Player(userID, username);
       this.state.players.push(player);
       if (this.state.players.length === this.state.maxPlayers){
         this.start();
       }
+      message = `${username} joined game.`;
       return player;
     }else{
       if(this.state.started){
-        return "Unable to join game. The game has already started.";
+        message = "Unable to join game. The game has already started.";
       }
-      return "Unable to join game. Exceded maximum number of players.";
+        message = "Unable to join game. Exceded maximum number of players.";
     }
+    console.log(message);
+    return message;
   }
 
   //transitions the game into the playing state
@@ -65,6 +69,7 @@ class Game{
 
   //all plays must be associated with a player to enforcce turns
   play(player, cardID){
+    let message;
     if (player && cardID){
       let card;
       //so function can accept id string or player object
@@ -72,38 +77,46 @@ class Game{
         player = this.getPlayer(player);
       }
       if(!this.state.betting && player === this.state.turn && (card = player.play(cardID))){
+        message = `${player.username} played ${card.value} of ${card.suit}`;
         this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       }else{
         if (player !== this.state.turn){
-          console.log(`Sorry it's ${this.state.turn.username}'s turn to play`);
+          message = `Sorry it's ${this.state.turn.username}'s turn to play`;
         }else if (this.state.betting){
-          console.log('The game is only accepting bets at this time');
+          message = 'The game is only accepting bets at this time';
         }else{
-          console.log('You can not play that.')
+          message = 'You can not play that.';
         }
       }
+    }else{
+      message = "Either play or cardID was not provided";
     }
+    console.log(message);
+    return message;
   }
 
   //TODO add betting and rule for last person to betting
   bet(player, bet){
+    let message;
     if (player != null && bet != null){
         if (!(player instanceof Player)){
           player = this.getPlayer(player);
         }
-        //console.log(player);
         if(player === this.state.turn && bet <= this.state.handSize && bet >= 0 && Number.isInteger(bet) && this.state.betting){
           this.state.bets[player.id] = bet;
           this.state.roundHandler.next();
+          message = "Bet made succesfully";
         }else{
           if (player !== this.state.turn){
-            console.log(`Sorry it's ${this.state.turn.username}'s turn to bet`);
+            message = `Sorry it's ${this.state.turn.username}'s turn to bet`;
           }else{
-            console.log('That is not a valid bet');
+            message = 'That is not a valid bet';
           }
         }
     }
+    console.log(message);
+    return message;
   }
 
   deal(numCards){
