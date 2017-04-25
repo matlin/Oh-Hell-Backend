@@ -3,7 +3,7 @@ const Player = require('./player.js');
 const Card = require('./card.js');
 
 class Game{
-  constructor(){
+  constructor(id){
     //all the info that should be used to create a game
     this.state = {
       players: [],
@@ -24,8 +24,40 @@ class Game{
       bets:{},
       handSize:0,
       tricks: new Map(),
-      //lastToBet
+      id: id,
     };
+  }
+
+  export(user){
+    let exportedState = {};
+    exportedState.players = this.state.players.map(player => player.username);
+    exportedState.started = this.state.started;
+    exportedState.scores = this.state.scores;
+    exportedState.cardsInPlay = {};
+    this.state.cardsInPlay.forEach((card, player) => {
+      exportedState.cardsInPlay[player.username] = card;
+    });
+    exportedState.dealer = this.state.dealer ? this.state.dealer.username : null;
+    exportedState.trumpCard = this.state.trumpCard;
+    exportedState.tricks = {};
+    this.state.tricks.forEach((card, player) => {
+      exportedState.tricks[player.username] = card;
+    });
+    exportedState.bets = {};
+    for (let userID in this.state.bets){
+      exportedState.bets[this.getPlayer(userID).username] = this.state.bets[userID];
+    }
+    exportedState.turn = this.state.turn ? this.state.turn.username : null;
+    exportedState.round = this.state.round;
+    exportedState.id = this.state.id;
+    let player = this.getPlayer(user)
+    if (player){
+      exportedState.hand = player.hand;
+    }
+    if (user === 'db'){
+      //add what is needed to save as JSON to database
+    }
+    return JSON.stringify(exportedState);
   }
 
   //used to let players join before game starts
@@ -43,7 +75,7 @@ class Game{
       if(this.state.started){
         message = "Unable to join game. The game has already started.";
       }
-        message = "Unable to join game. Exceded maximum number of players.";
+      message = "Unable to join game. Exceded maximum number of players.";
     }
     console.log(message);
     return message;
@@ -65,6 +97,7 @@ class Game{
         return player;
       }
     }
+    return false;
   }
 
   //all plays must be associated with a player to enforcce turns
@@ -320,3 +353,9 @@ game.play(game.state.turn, game.state.turn.hand[0].id);
 //     }
 //   }
 // }
+
+let game = new Game();
+let noel = game.addPlayer(1, 'noel');
+let matt = game.addPlayer(2, 'matt');
+game.start();
+console.log(game.export(1));

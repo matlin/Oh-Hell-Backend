@@ -29,7 +29,7 @@ router.post('/create', (req, res, next) => {
   let maxPlayers = req.body.maxPlayers;
   let userID = req.cookies.id;
   let gameID = shortid.generate();
-  let newGame = new Game(maxPlayers);
+  let newGame = new Game(gameID);
   User.findOne({_id : userID}, (err, user) => {
     if(user){
       const username = user.username;
@@ -54,11 +54,10 @@ router.put('/:id/join', (req,res,next) => {
   let currentGame = activeGames.get(req.params.id);
   let message;
   User.findOne({_id : userID}, (err, user) => {
-    if(user){
+    if(user && currentGame){
       const username = user.username;
       const gameID = req.params.id;
       message = currentGame.addPlayer(userID, username);
-      res.send(gameID);
     }else{
       message = "An error occurred while joining game. Could not get user.";
       res.status = 422;
@@ -77,7 +76,10 @@ router.put('/:id/start', (req, res, next) => {
   currentGame.start(); //Do we need to check who is trying to start the game?
   // update the DB
   if (currentGame){
-    res.send('Game started');
+    res.send({
+      message: 'Game started',
+      state: currentGame.export(userID),
+    });
   }else{
     res.send('Could not find game');
   }
@@ -88,9 +90,9 @@ router.put('/:id/start', (req, res, next) => {
 // sends back the state of the game
 router.get('/:id', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id; //placeholder because we don't know how cookies work
+  let userID = req.cookies.id;
   if (currentGame){
-    res.send("You found a game.");
+    res.send(currentGame.export(userID));
   }else{
     res.send("No game found");
   }
@@ -109,6 +111,10 @@ router.put('/:id/play', (req, res, next) => {
   let message = currentGame.play(userID, card);
   // update the DB
   //res.send({message: message, state: currentGame.getPlayerState(userID)});
+  const response = {
+    message: message,
+    state: currentGame.export(userID),
+  }
   res.send(message);
 });
 
