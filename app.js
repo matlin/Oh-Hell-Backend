@@ -18,7 +18,7 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-const whitelist = ['http://localhost:3000'];
+const whitelist = ['http://localhost:3000', 'http://localhost:4000', 'http://localhost:5000'];
 const corsOptions = {
     methods: ['GET', 'PUT', 'POST'],
     origin: function (origin, callback) {
