@@ -23,7 +23,8 @@ app.use(logger('dev'));
 const corsOptions = {
     methods: ['GET', 'PUT', 'POST'],
     origin: '*',
-    allowedHeaders: ['Content-Type']
+    allowedHeaders: ['Content-Type'],
+    credentials: true,
   };
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
