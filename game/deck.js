@@ -1,15 +1,15 @@
 class Deck{
 
-  constructor(){
+  constructor() {
     this.reset();
   }
 
-  reset(){
+  reset() {
     this.cards = this.createDeck();
     this.dealer = this.createDealer(this.cards);
   }
 
-  shuffle(){
+  shuffle() {
     let a = this.cards;
     for (let i = a.length; i; i--) {
       let j = Math.floor(Math.random() * i);
@@ -17,7 +17,7 @@ class Deck{
     }
   }
 
-  deal(n){
+  deal(n) {
     let hand = [];
     for (let i=0; i<n; i++){
       const card = this.dealer.next();
@@ -26,13 +26,13 @@ class Deck{
     return hand;
   }
 
-  * createDealer(cards){
+  * createDealer(cards) {
     for (let i=0; i<52; i++){
       yield cards.pop();
     }
   }
 
-  createDeck(){
+  createDeck() {
     let deck = [];
     const suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades'];
     const vals = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10','J','Q','K'];
