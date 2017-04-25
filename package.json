@@ -23,4 +23,5 @@
     "babel-cli": "^6.24.0",
     "semistandard": "*"
   }
+
 }
