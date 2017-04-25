@@ -18,11 +18,18 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+const whitelist = ['http://localhost:3000'];
 const corsOptions = {
     methods: ['GET', 'PUT', 'POST'],
-    origin: '*',
-    allowedHeaders: ['Content-Type'],
+    origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
     credentials: true,
+    allowedHeaders: ['Content-Type']
   };
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
