@@ -16,11 +16,23 @@ const User = mongoose.model('User');
 
 
 let activeGames = new Map();
-activeGames.set('test', new Game());
+activeGames.set('test', new Game('test'));
 
+// TODO: add this as functionality to future Lobby Class
+// returns an array of current games with minimal information;
+function exportGameList() {
+  gameList = [];
+  activeGames.forEach(
+    game => gameList.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers }))
+  return gameList;
+};
+
+// serves the gamelist
 router.get('/', function(req, res, next) {
-  res.send('No game has been created.');
+  const gameList = JSON.stringify(exportGameList());
+  res.send(gameList);
 });
+
 
 // route handling the creation of a game.
 // Body of request must specify min and max number of players in this game.
@@ -28,20 +40,24 @@ router.get('/', function(req, res, next) {
 router.post('/create', (req, res, next) => {
   let maxPlayers = req.body.maxPlayers;
   let userID = req.cookies.id;
-  let gameID = shortid.generate();
-  let newGame = new Game(gameID);
+  let message;
   User.findOne({_id : userID}, (err, user) => {
     if(user){
+      let gameID = shortid.generate();
+      let newGame = new Game(gameID);
       const username = user.username;
       newGame.addPlayer(userID, username);
       activeGames.set(gameID, newGame);
       // update the DB with this new game
-      console.log('Game succesfully created.', gameID);
-      res.send(gameID);
+      message = 'Game succesfully created.';
+      res.send({
+        message: message,
+        state: currentGame.export(userID)
+      });
     }else{
       console.log("Could not get user");
       res.status = 422;
-      res.send("An error occurred while joining game");
+      res.send("An error occurred while joining game. Could not get user.");
     }
   });
 });
@@ -62,9 +78,11 @@ router.put('/:id/join', (req,res,next) => {
       message = "An error occurred while joining game. Could not get user.";
       res.status = 422;
     }
+    res.send({
+      message: message,
+      state: currentGame.export(userID),
+    });
   });
-  console.log(message);
-  res.send(message);
 });
 
 // route handling starting a pre-existing game
@@ -115,7 +133,7 @@ router.put('/:id/play', (req, res, next) => {
     message: message,
     state: currentGame.export(userID),
   }
-  res.send(message);
+  res.send(response);
 });
 
 router.get('/:id/hand', (req, res, next) => {
@@ -138,7 +156,10 @@ router.put('/:id/bet', (req, res, next) => {
   let message = currentGame.bet(userID, +betAmount);
   // update the DB
   if (currentGame){
-    res.send(message);
+    res.send({
+      message:message,
+      state:currentGame.export(userID)
+    });
   }else{
     res.send("No game found");
   }
