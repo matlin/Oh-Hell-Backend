@@ -33,7 +33,15 @@ class Game {
     let exportedState = {};
     exportedState.players = this.state.players.map(player => player.username);
     exportedState.started = this.state.started;
-    exportedState.scores = this.state.scores;
+    exportedState.scores = {};
+    exportedState.scores.round = {};
+    for (let round in this.state.scores.round){
+      exportedState.scores.round[round] = {};
+      for (let playerID in this.state.scores.round[round]){
+        const player = this.getPlayer(playerID);
+        exportedState.scores.round[round][player.username] = this.state.scores.round[round][playerID];
+      }
+    }
     exportedState.cardsInPlay = {};
     this.state.cardsInPlay.forEach((card, player) => {
       exportedState.cardsInPlay[player.username] = card;
@@ -77,7 +85,6 @@ class Game {
         this.start();
       }
       message = `${username} joined game.`;
-      return player;
     } else {
       if (this.state.started) {
         message = "Unable to join game. The game has already started.";
@@ -157,7 +164,7 @@ class Game {
       ) {
         this.state.bets[player.id] = bet;
         this.state.roundHandler.next();
-        message = "Bet made succesfully";
+        message = `${player.username} bet ${bet}`;
       } else {
         if (player !== this.state.turn) {
           message = `Sorry it's ${this.state.turn.username}'s turn to bet`;
@@ -241,6 +248,7 @@ class Game {
       this.updateScores();
       console.log("score", this.state.scores);
       this.state.tricks.clear();
+      this.state.bets = {};
       //check who wins that round
     }
     console.log("Game over");
