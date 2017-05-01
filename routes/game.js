@@ -27,6 +27,18 @@ function exportGameList() {
   return gameList;
 };
 
+router.use((req, res, next) => {
+  let userID = req.cookies.id;
+  User.findOne({_id : userID}, (err, user) => {
+    if(user){
+      req.user = user;
+      next();
+    }else{
+      res.send('User not logged in');
+    }
+  });
+});
+
 // serves the gamelist
 router.get('/', function(req, res, next) {
   const gameList = JSON.stringify(exportGameList());
@@ -114,8 +126,18 @@ router.put('/:id/start', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.cookies.id;
+  let message, state;
   if (currentGame){
-    res.send(currentGame.export(userID));
+    state = currentGame.export(userID);
+    state.joined = true;
+    if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
+      message = "You are not in this game.";
+      state.joined = false;
+    }
+    res.send({
+      message:message,
+      state: state
+    });
   }else{
     res.send("No game found");
   }
