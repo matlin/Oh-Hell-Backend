@@ -70,7 +70,7 @@ class Game {
     if (user === "db") {
       //add what is needed to save as JSON to database
     }
-    return JSON.stringify(exportedState);
+    return exportedState;
   }
 
   //used to let players join before game starts

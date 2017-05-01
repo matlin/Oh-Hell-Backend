@@ -27,6 +27,18 @@ function exportGameList() {
   return gameList;
 };
 
+router.use((req, res, next) => {
+  let userID = req.cookies.id;
+  User.findOne({_id : userID}, (err, user) => {
+    if(user){
+      req.user = user;
+      next();
+    }else{
+      res.send('User not logged in');
+    }
+  });
+});
+
 // serves the gamelist
 router.get('/', function(req, res, next) {
   const gameList = JSON.stringify(exportGameList());
@@ -49,6 +61,7 @@ router.post('/create', (req, res, next) => {
       newGame.addPlayer(userID, username);
       activeGames.set(gameID, newGame);
       // update the DB with this new game
+      let currentGame = activeGames.get(gameID);
       message = 'Game succesfully created.';
       res.send({
         message: message,
@@ -71,9 +84,13 @@ router.put('/:id/join', (req,res,next) => {
   let message;
   User.findOne({_id : userID}, (err, user) => {
     if(user && currentGame){
-      const username = user.username;
-      const gameID = req.params.id;
-      message = currentGame.addPlayer(userID, username);
+      if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
+        const username = user.username;
+        const gameID = req.params.id;
+        message = currentGame.addPlayer(userID, username);
+      } else {
+        message = "You're already in the game!";
+      }
     }else{
       message = "An error occurred while joining game. Could not get user.";
       res.status = 422;
@@ -109,8 +126,18 @@ router.put('/:id/start', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.cookies.id;
+  let message, state;
   if (currentGame){
-    res.send(currentGame.export(userID));
+    state = currentGame.export(userID);
+    state.joined = true;
+    if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
+      message = "You are not in this game.";
+      state.joined = false;
+    }
+    res.send({
+      message:message,
+      state: state
+    });
   }else{
     res.send("No game found");
   }
