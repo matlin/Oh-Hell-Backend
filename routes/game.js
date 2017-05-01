@@ -49,6 +49,7 @@ router.post('/create', (req, res, next) => {
       newGame.addPlayer(userID, username);
       activeGames.set(gameID, newGame);
       // update the DB with this new game
+      let currentGame = activeGames.get(gameID);
       message = 'Game succesfully created.';
       res.send({
         message: message,
@@ -71,9 +72,13 @@ router.put('/:id/join', (req,res,next) => {
   let message;
   User.findOne({_id : userID}, (err, user) => {
     if(user && currentGame){
-      const username = user.username;
-      const gameID = req.params.id;
-      message = currentGame.addPlayer(userID, username);
+      if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
+        const username = user.username;
+        const gameID = req.params.id;
+        message = currentGame.addPlayer(userID, username);
+      } else {
+        message = "You're already in the game!";
+      }
     }else{
       message = "An error occurred while joining game. Could not get user.";
       res.status = 422;
