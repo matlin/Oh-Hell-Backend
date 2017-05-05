@@ -11,6 +11,7 @@ const index = require("./routes/index");
 const users = require("./routes/users");
 const game = require("./routes/game");
 
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
