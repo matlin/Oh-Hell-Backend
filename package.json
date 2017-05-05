@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "semistandard"
+    "test": "jest"
   },
   "dependencies": {
     "body-parser": "~1.17.1",
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
+    "jest": "^19.0.2",
     "semistandard": "*"
   }
 
