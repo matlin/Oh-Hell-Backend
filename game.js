@@ -25,7 +25,8 @@ class Game {
       bets: {},
       handSize: 0,
       tricks: new Map(),
-      id: id
+      id: id,
+      lastWinner
     };
   }
 
@@ -285,9 +286,17 @@ class Game {
 
   //plays out a given round and tricks
   *TrickHandler(numCards) {
-    const offset = this.state.players.findIndex(
+    const offset;
+    if(this.state.lastWinner === null){
+      offset = this.state.players.findIndex(
       player => player.id === this.state.dealer
-    );
+      );
+    }
+    else{
+      offset = (this.state.players.findIndex(
+      player => player.id === this.state.lastWinner
+    )) -1;
+    }
     for (let trick = 1; trick <= numCards; trick++) {
       console.log(`Playing trick ${trick} of ${numCards}`);
       for (let i = 1; i <= this.state.players.length; i++) {
@@ -302,6 +311,7 @@ class Game {
       }
       const winnerID = this.getTrickWinner();
       const winningCard = this.state.cardsInPlay.get(winnerID);
+      this.state.lastWinner = winnerID;
       console.log(
         `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit} wins`
       );
