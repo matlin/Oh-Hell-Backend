@@ -17,12 +17,12 @@
     "mongoose": "^4.9.4",
     "morgan": "~1.8.1",
     "serve-favicon": "~2.4.2",
-    "shortid": "^2.2.8"
+    "shortid": "^2.2.8",
+    "socket.io": "^1.7.3"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "jest": "^19.0.2",
     "semistandard": "*"
   }
-
 }
