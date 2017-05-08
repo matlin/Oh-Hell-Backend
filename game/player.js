@@ -5,6 +5,7 @@ class Player {
     this._id = id;
     this._hand = [];
     this._username = username;
+    this._suits = [];
   }
 
   get id() {
@@ -20,6 +21,15 @@ class Player {
     return this._username;
   }
 
+  suits(){
+    for(let i = 0; i <= this._hand.length; i++){
+      let tempCard = this._hand[i];
+      let tempSuit = tempCard.suit;
+      this._suits.push(tempSuit);
+    }
+  }
+
+
   //checks that the player has the card and removes it
   play(cardID) {
     for (let card of this._hand) {
@@ -28,6 +38,7 @@ class Player {
           this._hand.findIndex(element => element === card),
           1
         )[0];
+        suits();
         return result;
       }
     }
