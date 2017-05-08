@@ -16,6 +16,7 @@ class Game {
       invitations: [],
       maxHandSize: 0,
       cardsInPlay: new Map(), //map to guarantee property order
+      firstSuit: null,
       betting: false,
       dealer: null,
       trumpCard: null,
@@ -24,7 +25,8 @@ class Game {
       bets: {},
       handSize: 0,
       tricks: new Map(),
-      id: id
+      id: id,
+      lastWinner
     };
   }
 
@@ -34,7 +36,6 @@ class Game {
     exportedState.players = this.state.players.map(player => player.username);
     exportedState.started = this.state.started;
     exportedState.scores = {};
-    exportedState.betting = this.state.betting;
     exportedState.scores.round = {};
     for (let round in this.state.scores.round){
       exportedState.scores.round[round] = {};
@@ -47,7 +48,9 @@ class Game {
     this.state.cardsInPlay.forEach((card, player) => {
       exportedState.cardsInPlay[player.username] = card;
     });
-    exportedState.dealer = this.getPlayer(this.state.dealer).username;
+    exportedState.dealer = this.state.dealer
+      ? this.state.dealer.username
+      : null;
     exportedState.trumpCard = this.state.trumpCard;
     exportedState.tricks = {};
     this.state.tricks.forEach((card, player) => {
@@ -65,7 +68,6 @@ class Game {
     let player = this.getPlayer(user);
     if (player) {
       exportedState.hand = player.hand;
-      exportedState.user = player.username;
     }
     if (user === "db") {
       //add what is needed to save as JSON to database
@@ -115,7 +117,7 @@ class Game {
     return false;
   }
 
-  //all plays must be associated with a player to enforcce turns
+  //all plays must be associated with a player to enforce turns
   play(player, cardID) {
     let message;
     if (player && cardID) {
@@ -127,9 +129,17 @@ class Game {
       if (
         !this.state.betting &&
         player === this.state.turn &&
-        (card = player.play(cardID))
+        (card = player.play(cardID)) &&
+        (this.state.firstSuit === null ||
+        card.suit === this.state.trumpCard.suit ||
+        card.suit === this.state.firstSuit ||
+        ((!player._suits.includes(this.state.firstSuit)) &&
+         (!player._suits.includes(this.state.trumpCard.suit)))
       ) {
         message = `${player.username} played ${card.value} of ${card.suit}`;
+        if(this.state.firstSuit === null){
+          this.state.firstSuit === card.suit;
+        }
         this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       } else {
@@ -137,6 +147,8 @@ class Game {
           message = `Sorry it's ${this.state.turn.username}'s turn to play`;
         } else if (this.state.betting) {
           message = "The game is only accepting bets at this time";
+        } else if(card.suit !== this.state.firstSuit || card.suit !== this.state.trumpCard.suit){
+          message = "You cannot play a card of that suit";
         } else {
           message = "You can not play that.";
         }
@@ -160,7 +172,10 @@ class Game {
         bet <= this.state.handSize &&
         bet >= 0 &&
         Number.isInteger(bet) &&
-        this.state.betting
+        this.state.betting &&
+        if(player.id === this.state.dealer){
+          (var betSum=bets.reduce((a,b) => a+b,0))+bet != this.state.maxHandSize;
+        }
       ) {
         this.state.bets[player.id] = bet;
         this.state.roundHandler.next();
@@ -249,6 +264,7 @@ class Game {
       console.log("score", this.state.scores);
       this.state.tricks.clear();
       this.state.bets = {};
+      this.state.firstSuit = null;
       //check who wins that round
     }
     console.log("Game over");
@@ -270,9 +286,17 @@ class Game {
 
   //plays out a given round and tricks
   *TrickHandler(numCards) {
-    const offset = this.state.players.findIndex(
+    const offset;
+    if(this.state.lastWinner === null){
+      offset = this.state.players.findIndex(
       player => player.id === this.state.dealer
-    );
+      );
+    }
+    else{
+      offset = (this.state.players.findIndex(
+      player => player.id === this.state.lastWinner
+    )) -1;
+    }
     for (let trick = 1; trick <= numCards; trick++) {
       console.log(`Playing trick ${trick} of ${numCards}`);
       for (let i = 1; i <= this.state.players.length; i++) {
@@ -287,6 +311,7 @@ class Game {
       }
       const winnerID = this.getTrickWinner();
       const winningCard = this.state.cardsInPlay.get(winnerID);
+      this.state.lastWinner = winnerID;
       console.log(
         `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit} wins`
       );
