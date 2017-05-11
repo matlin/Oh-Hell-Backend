@@ -20,11 +20,19 @@ activeGames.set('test', new Game('test'));
 
 // TODO: add this as functionality to future Lobby Class
 // returns an array of current games with minimal information;
-function exportGameList() {
-  gameList = [];
+function exportGameList(userID) {
+  joinedGames = [];
+  openGames = []
   activeGames.forEach(
-    game => gameList.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers }))
-  return gameList;
+    game => {
+      if (game.getPlayer(userID)) {
+        joinedGames.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
+      } else if (game.state.players.length < game.state.maxPlayers) {
+        openGames.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
+      }
+    }
+  );
+  return {joinedGames, openGames};
 };
 
 router.use((req, res, next) => {
@@ -41,7 +49,8 @@ router.use((req, res, next) => {
 
 // serves the gamelist
 router.get('/', function(req, res, next) {
-  const gameList = JSON.stringify(exportGameList());
+  let userID = req.cookies.id;
+  const gameList = JSON.stringify(exportGameList(userID));
   res.send(gameList);
 });
 

@@ -34,7 +34,6 @@ class Game {
     exportedState.players = this.state.players.map(player => player.username);
     exportedState.started = this.state.started;
     exportedState.scores = {};
-    exportedState.betting = this.state.betting;
     exportedState.scores.round = {};
     for (let round in this.state.scores.round){
       exportedState.scores.round[round] = {};
@@ -47,7 +46,9 @@ class Game {
     this.state.cardsInPlay.forEach((card, player) => {
       exportedState.cardsInPlay[player.username] = card;
     });
-    exportedState.dealer = this.getPlayer(this.state.dealer).username;
+    exportedState.dealer = this.state.dealer
+      ? this.state.dealer.username
+      : null;
     exportedState.trumpCard = this.state.trumpCard;
     exportedState.tricks = {};
     this.state.tricks.forEach((card, player) => {
@@ -65,12 +66,12 @@ class Game {
     let player = this.getPlayer(user);
     if (player) {
       exportedState.hand = player.hand;
-      exportedState.user = player.username;
     }
     if (user === "db") {
       //add what is needed to save as JSON to database
     }
-    return exportedState;
+    return exportedStateD
+    ;
   }
 
   //used to let players join before game starts
