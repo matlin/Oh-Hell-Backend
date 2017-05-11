@@ -3,7 +3,7 @@ const Player = require("./player.js");
 const Card = require("./card.js");
 
 class Game {
-  constructor(id) {
+  constructor(id, gameName, password) {
     //all the info that should be used to create a game
     this.state = {
       players: [],
@@ -24,7 +24,9 @@ class Game {
       bets: {},
       handSize: 0,
       tricks: new Map(),
-      id: id
+      id: id,
+      gameName: gameName,
+      password: password
     };
   }
 

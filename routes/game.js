@@ -16,7 +16,7 @@ const User = mongoose.model('User');
 
 
 let activeGames = new Map();
-activeGames.set('test', new Game('test'));
+activeGames.set('test', new Game('test', 'philsTest'));
 
 // TODO: add this as functionality to future Lobby Class
 // returns an array of current games with minimal information;
@@ -26,9 +26,9 @@ function exportGameList(userID) {
   activeGames.forEach(
     game => {
       if (game.getPlayer(userID)) {
-        joinedGames.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
+        joinedGames.push({id: game.state.id, gameName: game.state.gameName, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
       } else if (game.state.players.length < game.state.maxPlayers) {
-        openGames.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
+        openGames.push({id: game.state.id, gameName: game.state.gameName, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers });
       }
     }
   );
@@ -59,28 +59,26 @@ router.get('/', function(req, res, next) {
 // Body of request must specify min and max number of players in this game.
 // Sends back confirmation
 router.post('/create', (req, res, next) => {
-  let maxPlayers = req.body.maxPlayers;
-  let userID = req.cookies.id;
+  const maxPlayers = req.body.maxPlayers;
+  const userID = req.cookies.id;
   let message;
-  User.findOne({_id : userID}, (err, user) => {
-    if(user){
-      let gameID = shortid.generate();
-      let newGame = new Game(gameID);
-      const username = user.username;
-      newGame.addPlayer(userID, username);
-      activeGames.set(gameID, newGame);
-      // update the DB with this new game
-      let currentGame = activeGames.get(gameID);
-      message = 'Game succesfully created.';
-      res.send({
-        message: message,
-        state: currentGame.export(userID)
-      });
-    }else{
-      console.log("Could not get user");
-      res.status = 422;
-      res.send("An error occurred while joining game. Could not get user.");
-    }
+  const gameID = shortid.generate();
+  const user = req.user;
+  const username = user.username;
+  let newGame;
+  console.log("Body in request", req.body);
+  if (req.body.password){
+    newGame = new Game(gameID, req.body.gameName, req.body.password);
+  } else {
+    newGame = new Game(gameID, req.body.gameName);
+  }
+  newGame.addPlayer(userID, username);
+  activeGames.set(gameID, newGame);
+  let currentGame = activeGames.get(gameID);
+  message = 'Game succesfully created.';
+  res.send({
+    message: message,
+    state: currentGame.export(userID)
   });
 });
 
@@ -91,24 +89,23 @@ router.put('/:id/join', (req,res,next) => {
   let userID = req.cookies.id;
   let currentGame = activeGames.get(req.params.id);
   let message;
-  User.findOne({_id : userID}, (err, user) => {
-    if(user && currentGame){
-      if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
-        const username = user.username;
-        const gameID = req.params.id;
-        message = currentGame.addPlayer(userID, username);
-      } else {
-        message = "You're already in the game!";
-      }
-    }else{
-      message = "An error occurred while joining game. Could not get user.";
-      res.status = 422;
+  if(req.user && currentGame){
+    if (!currentGame.state.players.includes(currentGame.getPlayer(req.user)) && (currentGame.state.password == null || req.body.password === currentGame.state.password)){
+      const username = user.username;
+      const gameID = req.params.id;
+      message = currentGame.addPlayer(userID, username);
+    } else {
+      message = "You're already in the game!";
     }
-    res.send({
-      message: message,
-      state: currentGame.export(userID),
-    });
+  }else{
+    message = "An error occurred while joining game. Could not get user.";
+    res.status = 422;
+  }
+  res.send({
+    message: message,
+    state: currentGame.export(userID),
   });
+
 });
 
 // route handling starting a pre-existing game
