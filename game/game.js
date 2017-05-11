@@ -65,6 +65,7 @@ class Game {
     exportedState.turn = this.state.turn ? this.state.turn.username : null;
     exportedState.round = this.state.round;
     exportedState.id = this.state.id;
+    exportedState.hasPassword = this.state.password != null;
     let player = this.getPlayer(user);
     if (player) {
       exportedState.hand = player.hand;
