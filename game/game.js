@@ -112,7 +112,7 @@ class Game {
   //converts a playerID/userID to player obj
   getPlayer(id) {
     for (let player of this.state.players) {
-      if (player.id === id) {
+      if (JSON.stringify(player.id) === JSON.stringify(id)) {
         return player;
       }
     }

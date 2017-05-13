@@ -29,7 +29,8 @@ function exportGameList(userID) {
       gameName: game.state.gameName,
       playersInGame: game.state.players.length,
       maxPlayers: game.state.maxPlayers,
-      isOwner: JSON.stringify(_userID) === JSON.stringify(game.state.owner)
+      isOwner: JSON.stringify(_userID) === JSON.stringify(game.state.owner),
+      hasPassword: game.state.password != null && game.state.password !== ""
     };
   };
   activeGames.forEach(
