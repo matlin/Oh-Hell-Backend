@@ -25,15 +25,33 @@ const User = mongoose.model('User');
 
 
 let activeGames = new Map();
-activeGames.set('test', new Game('test'));
+activeGames.set('test', new Game('test', 'philsTest'));
 
 // TODO: add this as functionality to future Lobby Class
 // returns an array of current games with minimal information;
-function exportGameList() {
-  gameList = [];
+function exportGameList(userID) {
+  joinedGames = [];
+  openGames = []
+  const lobbySummary = (game, _userID) => {
+    return {
+      id: game.state.id,
+      gameName: game.state.gameName,
+      playersInGame: game.state.players.length,
+      maxPlayers: game.state.maxPlayers,
+      isOwner: JSON.stringify(_userID) === JSON.stringify(game.state.owner),
+      hasPassword: game.state.password != null && game.state.password !== ""
+    };
+  };
   activeGames.forEach(
-    game => gameList.push({id: game.state.id, playersInGame: game.state.players.length, maxPlayers: game.state.maxPlayers }))
-  return gameList;
+    game => {
+      if (game.getPlayer(userID)) {
+        joinedGames.push(lobbySummary(game, userID));
+      } else if (game.state.players.length < game.state.maxPlayers) {
+        openGames.push(lobbySummary(game, userID));
+      }
+    }
+  );
+  return {joinedGames, openGames};
 };
 
 router.use((req, res, next) => {
@@ -50,7 +68,8 @@ router.use((req, res, next) => {
 
 // serves the gamelist
 router.get('/', function(req, res, next) {
-  const gameList = JSON.stringify(exportGameList());
+  let userID = req.cookies.id;
+  const gameList = JSON.stringify(exportGameList(userID));
   res.send(gameList);
 });
 
@@ -59,57 +78,59 @@ router.get('/', function(req, res, next) {
 // Body of request must specify min and max number of players in this game.
 // Sends back confirmation
 router.post('/create', (req, res, next) => {
-  let maxPlayers = req.body.maxPlayers;
-  let userID = req.cookies.id;
-  let message;
-  User.findOne({_id : userID}, (err, user) => {
-    if(user){
-      let gameID = shortid.generate();
-      let newGame = new Game(gameID);
-      const username = user.username;
-      newGame.addPlayer(userID, username);
-      activeGames.set(gameID, newGame);
-      // update the DB with this new game
-      let currentGame = activeGames.get(gameID);
-      message = 'Game succesfully created.';
-      res.send({
-        message: message,
-        state: currentGame.export(userID)
-      });
-    }else{
-      console.log("Could not get user");
-      res.status = 422;
-      res.send("An error occurred while joining game. Could not get user.");
-    }
-  });
+  const maxPlayers = req.body.maxPlayers;
+  const gameID = shortid.generate();
+  const username = req.user.username;
+  const userID = req.user._id;
+  let newGame;
+  if (req.body.password){
+    newGame = new Game(gameID, userID, req.body.gameName, req.body.password);
+  } else {
+    newGame = new Game(gameID, userID, req.body.gameName);
+  }
+  newGame.addPlayer(userID, username);
+  activeGames.set(gameID, newGame);
+  const gameList = JSON.stringify(exportGameList(userID));
+  res.send(gameList);
+});
+
+router.delete('/:id/delete', (req, res, next) => {
+  let userID = req.user._id;
+  let currentGame = activeGames.get(req.params.id);
+  if(req.user && currentGame && (JSON.stringify(userID) === JSON.stringify(currentGame.state.owner))){
+    activeGames.delete(req.params.id);
+    const gameList = JSON.stringify(exportGameList(userID));
+    res.send(gameList);
+  } else {
+    res.status = 403;
+    res.send('Only the game owner can delete the game');
+  }
 });
 
 //route handling adding players to a game
 //body of request has to have the cookie for user-id
 //sends confirmations
 router.put('/:id/join', (req,res,next) => {
-  let userID = req.cookies.id;
+  let userID = req.user._id;
   let currentGame = activeGames.get(req.params.id);
   let message;
-  //io.to(req.params.id).emit('update', {message:'You are in game ' + req.params.id});
-  User.findOne({_id : userID}, (err, user) => {
-    if(user && currentGame){
-      if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
-        const username = user.username;
-        const gameID = req.params.id;
-        message = currentGame.addPlayer(userID, username);
-      } else {
-        message = "You're already in the game!";
-      }
-    }else{
-      message = "An error occurred while joining game. Could not get user.";
-      res.status = 422;
+  if(req.user && currentGame){
+    if (!currentGame.state.players.includes(currentGame.getPlayer(userID)) && (currentGame.state.password == null || req.body.password === currentGame.state.password)){
+      const username = req.user.username;
+      const gameID = req.params.id;
+      message = currentGame.addPlayer(userID, username);
+    } else {
+      message = "You're already in the game!";
     }
-    res.send({
-      message: message,
-      state: currentGame.export(userID),
-    });
+  }else{
+    message = "An error occurred while joining game. Could not get user.";
+    res.status = 422;
+  }
+  res.send({
+    message: message,
+    state: currentGame.export(userID),
   });
+
 });
 
 // route handling starting a pre-existing game
@@ -117,12 +138,15 @@ router.put('/:id/join', (req,res,next) => {
 // Sends back the state of game that's just starting
 router.put('/:id/start', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id;
-  currentGame.start(); //Do we need to check who is trying to start the game?
+  let userID = req.user._id;
+  let message;
+   //Do we need to check who is trying to start the game?
   // update the DB
-  if (currentGame){
-    let response = {
-      message: 'Game started',
+  if (currentGame && (JSON.stringify(userID) === JSON.stringify(currentGame.state.owner))){
+    currentGame.start();
+    message = 'Game started';
+    res.send({
+      message: message,
       state: currentGame.export(userID),
     };
     io.in(req.params.id).emit('update');
@@ -130,7 +154,12 @@ router.put('/:id/start', (req, res, next) => {
     //res.send(response);
     //this.socket.emit(response)
   }else{
-    res.send('Could not find game');
+    res.status = 403;
+    message = 'Only the owner can start the game';
+    res.send({
+      message: message,
+      state: currentGame.export(userID),
+    });
   }
   //res.send(currentGame.getPlayerState(userID));
 });
@@ -139,7 +168,7 @@ router.put('/:id/start', (req, res, next) => {
 // sends back the state of the game
 router.get('/:id', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id;
+  let userID = req.user._id;
   let message, state;
   if (currentGame){
     state = currentGame.export(userID);
@@ -164,7 +193,7 @@ router.get('/:id', (req, res, next) => {
 // sends back a message and gamestate. Message will describes whether the play was successful.
 router.put('/:id/play', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id; //placeholder because we don't know how cookies work
+  let userID = req.user._id; //placeholder because we don't know how cookies work
   let card = req.body.card;
   //play needs to check 1. its this user's turn 2. if they have the specified card in their hand 3. if this is the right time to play a card
   let message = currentGame.play(userID, card);
@@ -177,7 +206,7 @@ router.put('/:id/play', (req, res, next) => {
 
 router.get('/:id/hand', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id; //placeholder because we don't know how cookies work
+  let userID = req.user._id; //placeholder because we don't know how cookies work
   let hand = currentGame.getPlayer(userID).hand;
   console.log(currentGame.getPlayer(userID).username + " retrieved their hand.");
   res.send({hand: hand});
@@ -189,7 +218,7 @@ router.get('/:id/hand', (req, res, next) => {
 // sends back a message and gamestate. Message will describes whether the bet was successful.
 router.put('/:id/bet', (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.cookies.id; //placeholder because we don't know how cookies work
+  let userID = req.user._id; //placeholder because we don't know how cookies work
   let betAmount = req.body.bet;
   // bet (yet to be implemented) needs to check if 1. it's this users turn 2. this bet amound is allowed (only a problem for the last player)
   let message = currentGame.bet(userID, +betAmount);

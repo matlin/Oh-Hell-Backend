@@ -26,7 +26,7 @@ const whitelist = [
   "http://localhost:80"
 ];
 const corsOptions = {
-  methods: ["GET", "PUT", "POST"],
+  methods: ["GET", "PUT", "POST", "DELETE"],
   origin: function(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
