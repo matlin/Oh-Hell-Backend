@@ -3,7 +3,7 @@ const Player = require("./player.js");
 const Card = require("./card.js");
 
 class Game {
-  constructor(id) {
+  constructor(id, owner, gameName, password) {
     //all the info that should be used to create a game
     this.state = {
       players: [],
@@ -24,7 +24,10 @@ class Game {
       bets: {},
       handSize: 0,
       tricks: new Map(),
-      id: id
+      id: id,
+      gameName: gameName,
+      password: password,
+      owner: owner
     };
   }
 
@@ -33,8 +36,8 @@ class Game {
     let exportedState = {};
     exportedState.players = this.state.players.map(player => player.username);
     exportedState.started = this.state.started;
-    exportedState.scores = {};
     exportedState.betting = this.state.betting;
+    exportedState.scores = {};
     exportedState.scores.round = {};
     for (let round in this.state.scores.round){
       exportedState.scores.round[round] = {};
@@ -62,6 +65,7 @@ class Game {
     exportedState.turn = this.state.turn ? this.state.turn.username : null;
     exportedState.round = this.state.round;
     exportedState.id = this.state.id;
+    exportedState.hasPassword = this.state.password != null;
     let player = this.getPlayer(user);
     if (player) {
       exportedState.hand = player.hand;
@@ -108,7 +112,7 @@ class Game {
   //converts a playerID/userID to player obj
   getPlayer(id) {
     for (let player of this.state.players) {
-      if (player.id === id) {
+      if (JSON.stringify(player.id) === JSON.stringify(id)) {
         return player;
       }
     }
