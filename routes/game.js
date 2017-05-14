@@ -12,6 +12,15 @@ db.once('open', function() {
   console.log("Users routes are connected!")
 });
 
+const io = require('socket.io')(4001);
+io.on('connection', (socket) => {
+  console.log('User connected');
+  socket.on('join', (id) => {
+    console.log('user joined' , id);
+    socket.join(id);
+  });
+});
+
 const User = mongoose.model('User');
 
 
@@ -139,7 +148,11 @@ router.put('/:id/start', (req, res, next) => {
     res.send({
       message: message,
       state: currentGame.export(userID),
-    });
+    };
+    io.in(req.params.id).emit('update');
+    res.sendStatus(200);
+    //res.send(response);
+    //this.socket.emit(response)
   }else{
     res.status = 403;
     message = 'Only the owner can start the game';
@@ -169,7 +182,7 @@ router.get('/:id', (req, res, next) => {
       state: state
     });
   }else{
-    res.send("No game found");
+    res.send({alert: "No game found"});
   }
   //res.send(currentGame.getPlayerState(userID));
 });
@@ -186,11 +199,9 @@ router.put('/:id/play', (req, res, next) => {
   let message = currentGame.play(userID, card);
   // update the DB
   //res.send({message: message, state: currentGame.getPlayerState(userID)});
-  const response = {
-    message: message,
-    state: currentGame.export(userID),
-  }
-  res.send(response);
+  io.in(req.params.id).emit('update');
+  res.send({alert: message});
+  // delete response.state.hand;
 });
 
 router.get('/:id/hand', (req, res, next) => {
@@ -198,7 +209,7 @@ router.get('/:id/hand', (req, res, next) => {
   let userID = req.user._id; //placeholder because we don't know how cookies work
   let hand = currentGame.getPlayer(userID).hand;
   console.log(currentGame.getPlayer(userID).username + " retrieved their hand.");
-  res.send(JSON.stringify(hand));
+  res.send({hand: hand});
 });
 
 // route handling playing a card
@@ -213,12 +224,16 @@ router.put('/:id/bet', (req, res, next) => {
   let message = currentGame.bet(userID, +betAmount);
   // update the DB
   if (currentGame){
-    res.send({
+    let response = {
       message:message,
       state:currentGame.export(userID)
-    });
+    }
+    io.in(req.params.id).emit('update');
+    res.send({alert: message});
+    // delete response.state.hand;
+    // console.log(response);
   }else{
-    res.send("No game found");
+    res.send({alert:"No game found"});
   }
   //res.send({message: message, state: currentGame.getPlayerState(userID)});
 });
