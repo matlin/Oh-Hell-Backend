@@ -148,7 +148,7 @@ router.put('/:id/start', (req, res, next) => {
     res.send({
       message: message,
       state: currentGame.export(userID),
-    };
+    });
     io.in(req.params.id).emit('update');
     res.sendStatus(200);
     //res.send(response);
