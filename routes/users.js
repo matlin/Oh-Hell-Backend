@@ -14,8 +14,8 @@ db.once('open', function() {
 
 // TODO: add additional field for games a user is in?
 const User = mongoose.model('User', {
-  username: String,
-  email: String,
+  username: { type: String, index: { unique: true }},
+  email: {type: String, unique:true},
   password: String
 });
 

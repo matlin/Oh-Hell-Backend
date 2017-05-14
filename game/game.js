@@ -48,13 +48,13 @@ class Game {
     }
     exportedState.cardsInPlay = {};
     this.state.cardsInPlay.forEach((card, player) => {
-      exportedState.cardsInPlay[player.username] = card;
+      exportedState.cardsInPlay[this.getPlayer(player).username] = card;
     });
     exportedState.dealer = this.getPlayer(this.state.dealer).username;
     exportedState.trumpCard = this.state.trumpCard;
     exportedState.tricks = {};
-    this.state.tricks.forEach((card, player) => {
-      exportedState.tricks[player.username] = card;
+    this.state.tricks.forEach((tricks, player) => {
+      exportedState.tricks[this.getPlayer(player).username] = tricks;
     });
     exportedState.bets = {};
     for (let userID in this.state.bets) {
