@@ -22,11 +22,14 @@ class Player {
   }
 
   suits(){
+    let temp = [];
     for(let i = 0; i <= this._hand.length; i++){
-      let tempCard = this._hand[i];
-      let tempSuit = tempCard.suit;
-      this._suits.push(tempSuit);
+      // let tempCard = this._hand[i];
+      // let tempSuit = tempCard.suit;
+      temp.push(this._hand[i].suit);
+      //this._suits.push(tempSuit);
     }
+    return temp;
   }
 
 
@@ -38,7 +41,7 @@ class Player {
           this._hand.findIndex(element => element === card),
           1
         )[0];
-        suits();
+        this._suits = suits();
         return result;
       }
     }
