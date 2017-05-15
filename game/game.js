@@ -65,11 +65,18 @@ class Game {
     exportedState.turn = this.state.turn ? this.state.turn.username : null;
     exportedState.round = this.state.round;
     exportedState.id = this.state.id;
+    exportedState.gameName = this.state.gameName;
     exportedState.hasPassword = this.state.password != null;
+    exportedState.maxPlayers = this.state.maxPlayers;
+    exportedState.minPlayers = this.state.minPlayers;
     let player = this.getPlayer(user);
+    exportedState.isOwner = this.state.owner === player._id;
     if (player) {
       exportedState.hand = player.hand;
       exportedState.user = player.username;
+      exportedState.joined = true;
+    } else {
+      exportedState.joined = false;
     }
     if (user === "db") {
       //add what is needed to save as JSON to database
