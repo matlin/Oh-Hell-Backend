@@ -58,7 +58,13 @@ router.use((req, res, next) => {
   let userID = req.cookies.id;
   User.findOne({_id : userID}, (err, user) => {
     if(user){
-      req.user = Object.assign({}, user, {_id: user._id.toString()});
+      //req.user = Object.assign({}, user, {_id: user._id.toString()});
+      req.user = {
+        username: user.username,
+        _id: user._id.toString(),
+        email: user.email,
+      }
+      console.log(req.user);
       next();
     }else{
       res.send('User not logged in');
