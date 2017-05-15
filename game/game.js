@@ -129,7 +129,7 @@ class Game {
       if (
         !this.state.betting &&
         player === this.state.turn &&
-        (card = player.play(cardID)) &&
+        (card = player.play(cardID))
 //         (this.state.firstSuit === null ||
 //         card.suit === this.state.trumpCard.suit ||
 //         card.suit === this.state.firstSuit ||
