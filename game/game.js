@@ -130,12 +130,12 @@ class Game {
         !this.state.betting &&
         player === this.state.turn &&
         (card = player.play(cardID)) &&
-        (this.state.firstSuit === null ||
-        card.suit === this.state.trumpCard.suit ||
-        card.suit === this.state.firstSuit ||
-        ((!player._suits.includes(this.state.firstSuit)) &&
-         (!player._suits.includes(this.state.trumpCard.suit)))
-      )) {
+//         (this.state.firstSuit === null ||
+//         card.suit === this.state.trumpCard.suit ||
+//         card.suit === this.state.firstSuit ||
+//         ((!player._suits.includes(this.state.firstSuit)) &&
+//          (!player._suits.includes(this.state.trumpCard.suit)))
+      ) {
         message = `${player.username} played ${card.value} of ${card.suit}`;
         if(this.state.firstSuit === null){
           this.state.firstSuit === card.suit;
