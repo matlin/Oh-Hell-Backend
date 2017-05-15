@@ -26,7 +26,7 @@ class Game {
       handSize: 0,
       tricks: new Map(),
       id: id,
-      lastWinner: null;
+      lastWinner: null
     };
   }
 
