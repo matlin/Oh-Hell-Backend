@@ -140,13 +140,8 @@ class Game {
       if (
         !this.state.betting &&
         player === this.state.turn &&
-        (card = player.play(cardID)) &&
-        (this.state.firstSuit === null ||
-        card.suit === this.state.trumpCard.suit ||
-        card.suit === this.state.firstSuit ||
-        ((!player._suits.includes(this.state.firstSuit)) &&
-         (!player._suits.includes(this.state.trumpCard.suit)))
-       )){
+        (card = player.play(cardID))
+       ){
         message = `${player.username} played ${card.value} of ${card.suit}`;
         if(this.state.firstSuit === null){
           this.state.firstSuit === card.suit;
@@ -301,6 +296,7 @@ class Game {
     let message;
     if(this.state.lastWinner === null){
       offset = this.state.players.findIndex(player => player.id === this.state.dealer);
+      player.firstSuit = this.state.firstSuit;
     }
     else{
       offset = (this.state.players.findIndex(
