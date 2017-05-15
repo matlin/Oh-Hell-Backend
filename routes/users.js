@@ -14,8 +14,8 @@ db.once('open', function() {
 
 // TODO: add additional field for games a user is in?
 const User = mongoose.model('User', {
-  username: String,
-  email: String,
+  username: { type: String, index: { unique: true }},
+  email: {type: String, unique:true},
   password: String
 });
 
@@ -69,7 +69,7 @@ router.post('/login', (req, res, next) => {
     const _id = req.cookies.id;
     User.findOne({_id}, {_id : 0, email : 0, password: 0}, function (err, user) {
       if (err) return console.error(err);
-      if (user) res.send("Welcome back " + user.username);
+      if (user) res.send({user: user.username});
     })
   }
   else {
@@ -78,7 +78,7 @@ router.post('/login', (req, res, next) => {
     User.findOne({email, password}, function (err , user) {
       if (err) return console.error(err);
       if (user){ // correct information
-        res.cookie('id', user._id, {expire : new Date() + 9999}).send("Logged in " + user.username);
+        res.cookie('id', user._id, {expire : new Date() + 9999}).send({user: user.username});
       } else { // incorrect information
         res.status = 401;
         res.send("Email or password do not match.");

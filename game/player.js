@@ -32,7 +32,7 @@ class Player {
 
 
   //checks that the player has the card and removes it
- play(cardID, has, requiredSuit) {
+ play(cardID, requiredSuit) {
    for (let card of this._hand) {
        if (cardID === card.id) {
           if(card.suit === requiredSuit || has === false){

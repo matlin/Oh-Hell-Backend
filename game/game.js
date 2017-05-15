@@ -3,7 +3,7 @@ const Player = require("./player.js");
 const Card = require("./card.js");
 
 class Game {
-  constructor(id) {
+  constructor(id, owner, gameName, password) {
     //all the info that should be used to create a game
     this.state = {
       players: [],
@@ -26,7 +26,11 @@ class Game {
       handSize: 0,
       tricks: new Map(),
       id: id,
-      lastWinner: null
+      lastWinner: null,
+      gameName: gameName,
+      password: password,
+      owner: owner,
+      messages: []
     };
   }
 
@@ -35,6 +39,8 @@ class Game {
     let exportedState = {};
     exportedState.players = this.state.players.map(player => player.username);
     exportedState.started = this.state.started;
+
+    exportedState.betting = this.state.betting;
     exportedState.scores = {};
     exportedState.scores.round = {};
     for (let round in this.state.scores.round){
@@ -46,15 +52,15 @@ class Game {
     }
     exportedState.cardsInPlay = {};
     this.state.cardsInPlay.forEach((card, player) => {
-      exportedState.cardsInPlay[player.username] = card;
+      exportedState.cardsInPlay[this.getPlayer(player).username] = card;
     });
     exportedState.dealer = this.state.dealer
       ? this.state.dealer.username
       : null;
     exportedState.trumpCard = this.state.trumpCard;
     exportedState.tricks = {};
-    this.state.tricks.forEach((card, player) => {
-      exportedState.tricks[player.username] = card;
+    this.state.tricks.forEach((tricks, player) => {
+      exportedState.tricks[this.getPlayer(player).username] = tricks;
     });
     exportedState.bets = {};
     for (let userID in this.state.bets) {
@@ -65,6 +71,7 @@ class Game {
     exportedState.turn = this.state.turn ? this.state.turn.username : null;
     exportedState.round = this.state.round;
     exportedState.id = this.state.id;
+    exportedState.hasPassword = this.state.password != null;
     let player = this.getPlayer(user);
     if (player) {
       exportedState.hand = player.hand;
@@ -72,6 +79,7 @@ class Game {
     if (user === "db") {
       //add what is needed to save as JSON to database
     }
+    exportedState.messages = this.state.messages;
     return exportedState;
   }
 
@@ -87,11 +95,14 @@ class Game {
         this.start();
       }
       message = `${username} joined game.`;
+      this.state.messages.push(message);
     } else {
       if (this.state.started) {
         message = "Unable to join game. The game has already started.";
+        this.state.messages.push(message);
       }
       message = "Unable to join game. Exceded maximum number of players.";
+      this.state.messages.push(message);
     }
     console.log(message);
     return message;
@@ -110,7 +121,7 @@ class Game {
   //converts a playerID/userID to player obj
   getPlayer(id) {
     for (let player of this.state.players) {
-      if (player.id === id) {
+      if (JSON.stringify(player.id) === JSON.stringify(id)) {
         return player;
       }
     }
@@ -140,6 +151,7 @@ class Game {
         if(this.state.firstSuit === null){
           this.state.firstSuit === card.suit;
         }
+        this.state.messages.push(message);
         this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       } else {
@@ -173,13 +185,12 @@ class Game {
         bet >= 0 &&
         Number.isInteger(bet) &&
         this.state.betting &&
-        if(player.id === this.state.dealer){
-          (var betSum=bets.reduce((a,b) => a+b,0))+bet != this.state.maxHandSize;
-        }
+        ((player.id === this.state.dealer) && (bets.reduce((a,b) => a+b,0))+bet != this.state.maxHandSize)
       ) {
         this.state.bets[player.id] = bet;
         this.state.roundHandler.next();
         message = `${player.username} bet ${bet}`;
+        this.state.messages.push(message);
       } else {
         if (player !== this.state.turn) {
           message = `Sorry it's ${this.state.turn.username}'s turn to bet`;
@@ -286,11 +297,10 @@ class Game {
 
   //plays out a given round and tricks
   *TrickHandler(numCards) {
-    const offset;
+    let offset=0;
+    let message;
     if(this.state.lastWinner === null){
-      offset = this.state.players.findIndex(
-      player => player.id === this.state.dealer
-      );
+      offset = this.state.players.findIndex(player => player.id === this.state.dealer);
     }
     else{
       offset = (this.state.players.findIndex(
@@ -312,8 +322,10 @@ class Game {
       const winnerID = this.getTrickWinner();
       const winningCard = this.state.cardsInPlay.get(winnerID);
       this.state.lastWinner = winnerID;
+      message = `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
+      this.state.messages.push(message);
       console.log(
-        `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit} wins`
+        `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
       );
       const winnerTricks = this.state.tricks.has(winnerID)
         ? this.state.tricks.get(winnerID)

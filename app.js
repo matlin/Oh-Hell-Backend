@@ -26,9 +26,9 @@ const whitelist = [
   "http://localhost:80"
 ];
 const corsOptions = {
-  methods: ["GET", "PUT", "POST"],
+  methods: ["GET", "PUT", "POST", "DELETE"],
   origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (whitelist.indexOf(origin) !== -1 || true) { //this allows all origins
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -61,7 +61,7 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
+  res.status = err.status || 500;
   res.render("error");
 });
 
