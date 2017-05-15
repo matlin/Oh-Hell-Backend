@@ -27,7 +27,8 @@ class Game {
       id: id,
       gameName: gameName,
       password: password,
-      owner: owner
+      owner: owner,
+      messages: []
     };
   }
 
@@ -74,6 +75,7 @@ class Game {
     if (user === "db") {
       //add what is needed to save as JSON to database
     }
+    exportedState.messages = this.state.messages;
     return exportedState;
   }
 
@@ -89,11 +91,14 @@ class Game {
         this.start();
       }
       message = `${username} joined game.`;
+      this.state.messages.push(message);
     } else {
       if (this.state.started) {
         message = "Unable to join game. The game has already started.";
+        this.state.messages.push(message);
       }
       message = "Unable to join game. Exceded maximum number of players.";
+      this.state.messages.push(message);
     }
     console.log(message);
     return message;
@@ -134,6 +139,7 @@ class Game {
         (card = player.play(cardID))
       ) {
         message = `${player.username} played ${card.value} of ${card.suit}`;
+        this.state.messages.push(message);
         this.state.cardsInPlay.set(player.id, card);
         this.state.roundHandler.next();
       } else {
@@ -169,6 +175,7 @@ class Game {
         this.state.bets[player.id] = bet;
         this.state.roundHandler.next();
         message = `${player.username} bet ${bet}`;
+        this.state.messages.push(message);
       } else {
         if (player !== this.state.turn) {
           message = `Sorry it's ${this.state.turn.username}'s turn to bet`;
@@ -274,6 +281,7 @@ class Game {
 
   //plays out a given round and tricks
   *TrickHandler(numCards) {
+    let message;
     const offset = this.state.players.findIndex(
       player => player.id === this.state.dealer
     );
@@ -291,8 +299,10 @@ class Game {
       }
       const winnerID = this.getTrickWinner();
       const winningCard = this.state.cardsInPlay.get(winnerID);
+      message = `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
+      this.state.messages.push(message);
       console.log(
-        `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit} wins`
+        `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
       );
       const winnerTricks = this.state.tricks.has(winnerID)
         ? this.state.tricks.get(winnerID)
