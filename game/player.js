@@ -6,6 +6,7 @@ class Player {
     this._hand = [];
     this._username = username;
     this._suits = [];
+    this._firstSuit = null;
   }
 
   get id() {
@@ -21,21 +22,26 @@ class Player {
     return this._username;
   }
 
-  get hasSuit(requiredSuit){
+  get hasSuit(){
     let has = false;
     for(let i = 0; i < this._hand.length; i++){
-      if(this._hand[i].suit === requiredSuit){
+      if(this._hand[i].suit === this._firstSuit){
         has = true;
     }
     return has;
   }
 
+  get firstSuit(suit){
+    return this._firstSuit = suit;
+  }
+
 
   //checks that the player has the card and removes it
- play(cardID, requiredSuit) {
+ play(cardID) {
+   let check = hasSuit();
    for (let card of this._hand) {
        if (cardID === card.id) {
-          if(card.suit === requiredSuit || has === false){
+          if(card.suit === this._firstSuit || check === false){
              const result = this._hand.splice(
              this._hand.findIndex(element => element === card),
               1
