@@ -26,7 +26,7 @@ class Game {
       handSize: 0,
       tricks: new Map(),
       id: id,
-      lastWinner: null
+      lastWinner: null;
     };
   }
 
@@ -129,13 +129,13 @@ class Game {
       if (
         !this.state.betting &&
         player === this.state.turn &&
-        (card = player.play(cardID))
-//         (this.state.firstSuit === null ||
-//         card.suit === this.state.trumpCard.suit ||
-//         card.suit === this.state.firstSuit ||
-//         ((!player._suits.includes(this.state.firstSuit)) &&
-//          (!player._suits.includes(this.state.trumpCard.suit)))
-      ) {
+        (card = player.play(cardID)) &&
+        (this.state.firstSuit === null ||
+        card.suit === this.state.trumpCard.suit ||
+        card.suit === this.state.firstSuit ||
+        ((!player._suits.includes(this.state.firstSuit)) &&
+         (!player._suits.includes(this.state.trumpCard.suit)))
+       )){
         message = `${player.username} played ${card.value} of ${card.suit}`;
         if(this.state.firstSuit === null){
           this.state.firstSuit === card.suit;
@@ -147,8 +147,8 @@ class Game {
           message = `Sorry it's ${this.state.turn.username}'s turn to play`;
         } else if (this.state.betting) {
           message = "The game is only accepting bets at this time";
-        } else if(card.suit !== this.state.firstSuit){
-          message = "You cannot play a card of that suit";
+        // } else if(card.suit !== this.state.firstSuit || card.suit !== this.state.trumpCard.suit){
+        //   message = "You cannot play a card of that suit";
         } else {
           message = "You can not play that.";
         }
@@ -172,10 +172,10 @@ class Game {
         bet <= this.state.handSize &&
         bet >= 0 &&
         Number.isInteger(bet) &&
-        this.state.betting
-        // (if(player.id === this.state.dealer.id){
-        //   (var betSum=bets.reduce((a,b) => a+b,0))+bet != this.state.maxHandSize;
-        // })
+        this.state.betting &&
+        if(player.id === this.state.dealer){
+          (var betSum=bets.reduce((a,b) => a+b,0))+bet != this.state.maxHandSize;
+        }
       ) {
         this.state.bets[player.id] = bet;
         this.state.roundHandler.next();
@@ -286,8 +286,7 @@ class Game {
 
   //plays out a given round and tricks
   *TrickHandler(numCards) {
-    let offset;
-
+    const offset;
     if(this.state.lastWinner === null){
       offset = this.state.players.findIndex(
       player => player.id === this.state.dealer
