@@ -147,7 +147,7 @@ class Game {
           message = `Sorry it's ${this.state.turn.username}'s turn to play`;
         } else if (this.state.betting) {
           message = "The game is only accepting bets at this time";
-        } else if(card.suit !== this.state.firstSuit || card.suit !== this.state.trumpCard.suit){
+        } else if(card.suit !== this.state.firstSuit){
           message = "You cannot play a card of that suit";
         } else {
           message = "You can not play that.";
