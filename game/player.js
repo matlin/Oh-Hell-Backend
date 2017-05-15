@@ -21,32 +21,31 @@ class Player {
     return this._username;
   }
 
-  suits(){
-    let temp = [];
-    for(let i = 0; i <= this._hand.length; i++){
-      // let tempCard = this._hand[i];
-      // let tempSuit = tempCard.suit;
-      temp.push(this._hand[i].suit);
-      //this._suits.push(tempSuit);
+  get hasSuit(requiredSuit){
+    let has = false;
+    for(let i = 0; i < this._hand.length; i++){
+      if(this._hand[i].suit === requiredSuit){
+        has = true;
     }
-    return temp;
+    return has;
   }
 
 
   //checks that the player has the card and removes it
-  play(cardID) {
-    for (let card of this._hand) {
-      if (cardID === card.id) {
-        const result = this._hand.splice(
-          this._hand.findIndex(element => element === card),
-          1
-        )[0];
-        this._suits = suits();
-        return result;
-      }
-    }
-    return false;
-  }
+ play(cardID, has, requiredSuit) {
+   for (let card of this._hand) {
+       if (cardID === card.id) {
+          if(card.suit === requiredSuit || has === false){
+             const result = this._hand.splice(
+             this._hand.findIndex(element => element === card),
+              1
+           )[0];
+           return result;
+         }
+       }
+     }
+     return false;
+   }
 }
 
 module.exports = Player;
