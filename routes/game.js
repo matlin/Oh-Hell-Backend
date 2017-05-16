@@ -128,10 +128,11 @@ router.put('/:id/join', (req,res,next) => {
     } else {
       message = "You're already in the game!";
     }
-  }else{
+  } else {
     message = "An error occurred while joining game. Could not get user.";
     res.status = 422;
   }
+  io.in(req.params.id).emit('update');
   res.send({
     message: message,
     state: currentGame.export(userID),
@@ -178,10 +179,8 @@ router.get('/:id', (req, res, next) => {
   let message, state;
   if (currentGame){
     state = currentGame.export(userID);
-    state.joined = true;
     if (!currentGame.state.players.includes(currentGame.getPlayer(userID))){
       message = "You are not in this game.";
-      state.joined = false;
     }
     res.send({
       message:message,
