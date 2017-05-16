@@ -345,7 +345,10 @@ class Game {
       if (this.state.bets[playerID] === this.state.tricks.get(playerID)) {
         this.state.scores.round[this.state.round][playerID] =
           10 + 2 * this.state.tricks.get(playerID);
-      } else {
+      } else if(this.state.bets[playerID] === 0 && this.state.tricks.get(playerID) === undefined){
+        this.state.scores.round[this.state.round][playerID] = 10;
+      }
+      else{
         this.state.scores.round[this.state.round][playerID] = 0;
       }
     }
