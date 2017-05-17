@@ -289,7 +289,7 @@ class Game {
   //plays out a given round and tricks
   *TrickHandler(numCards) {
     let message;
-    const offset = this.state.players.findIndex(
+    let offset = this.state.players.findIndex(
       player => player.id === this.state.dealer
     );
     for (let trick = 1; trick <= numCards; trick++) {
@@ -305,8 +305,12 @@ class Game {
         console.log(`${player.username} played ${card.value} of ${card.suit}`);
       }
       const winnerID = this.getTrickWinner();
+      const winningPlayer = this.getPlayer(winnerID);
+      offset = this.state.players.findIndex(
+        player => player.id === winnerID
+      );
       const winningCard = this.state.cardsInPlay.get(winnerID);
-      message = `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
+      message = `${winningPlayer.username} won with ${winningCard.value} of ${winningCard.suit}`
       this.state.messages.push(message);
       console.log(
         `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`

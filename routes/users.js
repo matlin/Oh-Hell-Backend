@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const router = express.Router();
 
 // specificying /ohell/ connects us to the ohell DB
-mongoose.connect('mongodb://localhost:5000/ohell/');
+mongoose.connect(process.env.DBURL || 'mongodb://localhost:5000/ohell/');
 let db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
