@@ -25,7 +25,6 @@ const User = mongoose.model('User');
 
 
 let activeGames = new Map();
-activeGames.set('test', new Game('test', 'philsTest'));
 
 // TODO: add this as functionality to future Lobby Class
 // returns an array of current games with minimal information;
