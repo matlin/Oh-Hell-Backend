@@ -19,7 +19,24 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+ // Make io accessible to our router
+//  app.use('/game', function(req,res,next){
+//      console.log('attaching socket to request');
+//      req.io = io;
+//      next();
+//  });
+//
+// var server = http.createServer(app);
+//
+// const io = require('socket.io')(server);
+// io.on('connection', (socket) => {
+//   console.log('User connected');
+//   socket.on('join', (id) => {
+//     console.log('user joined' , id);
+//     socket.join(id);
+//   });
+// });
+
 
 //const io = require('socket.io')(4001);
 //
@@ -53,10 +70,10 @@ var server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-console.log('listening on port ' + port);
+// server.listen(port);
+// server.on('error', onError);
+// server.on('listening', onListening);
+// console.log('listening on port ' + port);
 
 /**
  * Normalize a port into a number, string, or false.

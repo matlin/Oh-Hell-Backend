@@ -12,15 +12,6 @@ db.once('open', function() {
   console.log("Users routes are connected!")
 });*/
 
-const io = require('socket.io')(4001);
-io.on('connection', (socket) => {
-  console.log('User connected');
-  socket.on('join', (id) => {
-    console.log('user joined' , id);
-    socket.join(id);
-  });
-});
-
 const User = mongoose.model('User');
 
 
@@ -73,6 +64,7 @@ router.use((req, res, next) => {
 
 // serves the gamelist
 router.get('/', function(req, res, next) {
+  console.log(req.io);
   let userID = req.cookies.id;
   const gameList = JSON.stringify(exportGameList(userID));
   res.send(gameList);
@@ -131,7 +123,7 @@ router.put('/:id/join', (req,res,next) => {
     message = "An error occurred while joining game. Could not get user.";
     res.status = 422;
   }
-  io.in(req.params.id).emit('update');
+  req.io.in(req.params.id).emit('update');
   res.send({
     message: message,
     state: currentGame.export(userID),
@@ -155,7 +147,7 @@ router.put('/:id/start', (req, res, next) => {
       message: message,
       state: currentGame.export(userID),
     });
-    io.in(req.params.id).emit('update');
+    req.io.in(req.params.id).emit('update');
     res.sendStatus(200);
     //res.send(response);
     //this.socket.emit(response)
@@ -203,7 +195,7 @@ router.put('/:id/play', (req, res, next) => {
   let message = currentGame.play(userID, card);
   // update the DB
   //res.send({message: message, state: currentGame.getPlayerState(userID)});
-  io.in(req.params.id).emit('update');
+  req.io.in(req.params.id).emit('update');
   res.send({alert: message});
   // delete response.state.hand;
 });
@@ -232,7 +224,7 @@ router.put('/:id/bet', (req, res, next) => {
       message:message,
       state:currentGame.export(userID)
     }
-    io.in(req.params.id).emit('update');
+    req.io.in(req.params.id).emit('update');
     res.send({alert: message});
     // delete response.state.hand;
     // console.log(response);
