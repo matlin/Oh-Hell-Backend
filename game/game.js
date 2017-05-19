@@ -40,11 +40,13 @@ class Game {
     exportedState.betting = this.state.betting;
     exportedState.scores = {};
     exportedState.scores.round = {};
-    for (let round in this.state.scores.round){
+    for (let round in this.state.scores.round) {
       exportedState.scores.round[round] = {};
-      for (let playerID in this.state.scores.round[round]){
+      for (let playerID in this.state.scores.round[round]) {
         const player = this.getPlayer(playerID);
-        exportedState.scores.round[round][player.username] = this.state.scores.round[round][playerID];
+        exportedState.scores.round[round][
+          player.username
+        ] = this.state.scores.round[round][playerID];
       }
     }
     exportedState.cardsInPlay = {};
@@ -90,7 +92,8 @@ class Game {
   addPlayer(userID, username) {
     let message;
     if (
-      this.state.players.length < this.state.maxPlayers && !this.state.started
+      this.state.players.length < this.state.maxPlayers &&
+      !this.state.started
     ) {
       let player = new Player(userID, username);
       this.state.players.push(player);
@@ -306,11 +309,9 @@ class Game {
       }
       const winnerID = this.getTrickWinner();
       const winningPlayer = this.getPlayer(winnerID);
-      offset = this.state.players.findIndex(
-        player => player.id === winnerID
-      );
+      offset = this.state.players.findIndex(player => player.id === winnerID);
       const winningCard = this.state.cardsInPlay.get(winnerID);
-      message = `${winningPlayer.username} won with ${winningCard.value} of ${winningCard.suit}`
+      message = `${winningPlayer.username} won with ${winningCard.value} of ${winningCard.suit}`;
       this.state.messages.push(message);
       console.log(
         `${this.getPlayer(winnerID).username} won with ${winningCard.value} of ${winningCard.suit}`
@@ -349,10 +350,12 @@ class Game {
       if (this.state.bets[playerID] === this.state.tricks.get(playerID)) {
         this.state.scores.round[this.state.round][playerID] =
           10 + 2 * this.state.tricks.get(playerID);
-      } else if(this.state.bets[playerID] === 0 && this.state.tricks.get(playerID) === undefined){
+      } else if (
+        this.state.bets[playerID] === 0 &&
+        this.state.tricks.get(playerID) === undefined
+      ) {
         this.state.scores.round[this.state.round][playerID] = 10;
-      }
-      else{
+      } else {
         this.state.scores.round[this.state.round][playerID] = 0;
       }
     }

@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
-var http = require('http');
-var debug = require('debug')('ohell:server');
+var http = require("http");
+var debug = require("debug")("ohell:server");
 // const favicon = require('serve-favicon');
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
@@ -12,7 +12,6 @@ const app = express();
 const index = require("./routes/index");
 const users = require("./routes/users");
 const game = require("./routes/game");
-
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -30,7 +29,8 @@ const whitelist = [
 const corsOptions = {
   methods: ["GET", "PUT", "POST", "DELETE"],
   origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || true) { //this allows all origins
+    if (whitelist.indexOf(origin) !== -1 || true) {
+      //this allows all origins
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -48,23 +48,23 @@ app.use(express.static(path.join(__dirname, "public")));
 // catch 404 and forward to error handler
 
 var server = http.createServer(app);
-var port = normalizePort(process.env.PORT || '4000');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || "4000");
+app.set("port", port);
 
-const io = require('socket.io')(server);
+const io = require("socket.io")(server);
 
-io.on('connection', (socket) => {
- console.log('User connected');
- socket.on('join', (id) => {
-   console.log('user joined' , id);
-   socket.join(id);
- });
+io.on("connection", socket => {
+  console.log("User connected");
+  socket.on("join", id => {
+    console.log("user joined", id);
+    socket.join(id);
+  });
 });
 
-app.use('/game', function(req,res,next){
-    console.log('attaching socket to request');
-    req.io = io;
-    next();
+app.use("/game", function(req, res, next) {
+  console.log("attaching socket to request");
+  req.io = io;
+  next();
 });
 
 app.use("/", index);
@@ -92,9 +92,9 @@ app.use(function(err, req, res, next) {
  * Listen on provided port, on all network interfaces.
  */
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-console.log('listening on port ' + port);
+server.on("error", onError);
+server.on("listening", onListening);
+console.log("listening on port " + port);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -121,22 +121,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== "listen") {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
       process.exit(1);
       break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
       process.exit(1);
       break;
     default:
@@ -150,11 +148,8 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  debug("Listening on " + bind);
 }
-
 
 module.exports = app;
