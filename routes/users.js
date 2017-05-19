@@ -45,7 +45,7 @@ router.post('/register', (req, res, next) => {
             if (err) return console.error(err);
             if (user) {
               res.clearCookie('id'); //in case they were already logged in
-              res.cookie('id', user._id, {expire : new Date() + 9999}).send({user: user.username}});
+              res.cookie('id', user._id, {expire : new Date() + 9999}).send({user: user.username});
             }
             else console.log("couldn't find our new entry");
           });
