@@ -297,7 +297,7 @@ class Game {
     ) + 1;
     for (let trick = 1; trick <= numCards; trick++) {
       console.log(`Playing trick ${trick} of ${numCards}`);
-      for (let i = 0; i <= this.state.players.length; i++) {
+      for (let i = 0; i < this.state.players.length; i++) {
         let player = this.state.players[
           (i + offset) % this.state.players.length
         ];
