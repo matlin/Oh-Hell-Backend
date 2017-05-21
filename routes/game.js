@@ -16,8 +16,9 @@ const User = mongoose.model("User");
 
 let activeGames = new Map();
 
-// TODO: add this as functionality to future Lobby Class
-// returns an array of current games with minimal information;
+/* Takes a userID returns a list of games that the user should be able to see
+ * in the lobby. This list is served on routes that handle updating the lobby.
+ */
 function exportGameList(userID) {
   joinedGames = [];
   openGames = [];
@@ -41,6 +42,9 @@ function exportGameList(userID) {
   return { joinedGames, openGames };
 }
 
+/* This middleware will prevent any unauthenticated user from making requests.
+ * If a user is authenticated, adds their ID to the request for use in routes.
+ */
 router.use((req, res, next) => {
   let userID = req.cookies.id;
   User.findOne({ _id: userID }, (err, user) => {
@@ -59,7 +63,8 @@ router.use((req, res, next) => {
   });
 });
 
-// serves the gamelist
+
+// GET: Serves the list of games to be displayed in a user's lobby.
 router.get("/", function(req, res, next) {
   console.log(req.io);
   let userID = req.cookies.id;
@@ -67,9 +72,9 @@ router.get("/", function(req, res, next) {
   res.send(gameList);
 });
 
-// route handling the creation of a game.
-// Body of request must specify min and max number of players in this game.
-// Sends back confirmation
+/* POST: Takes a gamename and optional password and instatiates the game.
+ * Sends the new list of games for the lobby.
+ */
 router.post("/create", (req, res, next) => {
   const maxPlayers = req.body.maxPlayers;
   const gameID = shortid.generate();
@@ -87,6 +92,9 @@ router.post("/create", (req, res, next) => {
   res.send(gameList);
 });
 
+/* DELETE: Allows game owners to delete games they've created, at any
+ * stage. Sends the new list of games for the lobby.
+ */
 router.delete("/:id/delete", (req, res, next) => {
   let userID = req.user._id;
   let currentGame = activeGames.get(req.params.id);
@@ -104,9 +112,10 @@ router.delete("/:id/delete", (req, res, next) => {
   }
 });
 
-//route handling adding players to a game
-//body of request has to have the cookie for user-id
-//sends confirmations
+/* PUT: Adds a user to a game. If the game has a password, it will check the
+ * request for the proper password. Sends the gamestate if succesfully joined.
+ * TODO: This should serve an alert if game joining fails.
+ */
 router.put("/:id/join", (req, res, next) => {
   let userID = req.user._id;
   let currentGame = activeGames.get(req.params.id);
@@ -134,15 +143,13 @@ router.put("/:id/join", (req, res, next) => {
   });
 });
 
-// route handling starting a pre-existing game
-// TODO: is the creator of the game the only person who can start it?
-// Sends back the state of game that's just starting
+/* PUT: Allows the owner to start the game.
+ * Serves the gamestate to the owner and all others in the game.
+ */
 router.put("/:id/start", (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.user._id;
   let message;
-  //Do we need to check who is trying to start the game?
-  // update the DB
   if (
     currentGame &&
     JSON.stringify(userID) === JSON.stringify(currentGame.state.owner)
@@ -155,8 +162,6 @@ router.put("/:id/start", (req, res, next) => {
     });
     req.io.in(req.params.id).emit("update");
     res.sendStatus(200);
-    //res.send(response);
-    //this.socket.emit(response)
   } else {
     res.status = 403;
     message = "Only the owner can start the game";
@@ -165,11 +170,11 @@ router.put("/:id/start", (req, res, next) => {
       state: currentGame.export(userID)
     });
   }
-  //res.send(currentGame.getPlayerState(userID));
 });
 
-// route handling updating all users besides the one who played or bet (probably)
-// sends back the state of the game
+/* GET: serves the user the current gamestate.
+ * Sends a message if the user is not in the game, or an alert.
+ */
 router.get("/:id", (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
   let userID = req.user._id;
@@ -186,24 +191,20 @@ router.get("/:id", (req, res, next) => {
   } else {
     res.send({ alert: "No game found" });
   }
-  //res.send(currentGame.getPlayerState(userID));
 });
 
-// route handling playing a card
-// request body must have a card object.
-// TODO: add functionality to Game class that checks if card is in player's hand
-// sends back a message and gamestate. Message will describes whether the play was successful.
+/* PUT: route handling playing a card
+ * request body must have a card object.
+ * sends back a message and gamestate. Message will describes whether the play
+ * was successful.
+ */
 router.put("/:id/play", (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.user._id; //placeholder because we don't know how cookies work
+  let userID = req.user._id;
   let card = req.body.card;
-  //play needs to check 1. its this user's turn 2. if they have the specified card in their hand 3. if this is the right time to play a card
   let message = currentGame.play(userID, card);
-  // update the DB
-  //res.send({message: message, state: currentGame.getPlayerState(userID)});
   req.io.in(req.params.id).emit("update");
   res.send({ alert: message });
-  // delete response.state.hand;
 });
 
 router.get("/:id/hand", (req, res, next) => {
@@ -216,17 +217,15 @@ router.get("/:id/hand", (req, res, next) => {
   res.send({ hand: hand });
 });
 
-// route handling playing a card
-// request body must have a card object.
-// TODO: add functionality to Game class that checks if bet amount is OK
-// sends back a message and gamestate. Message will describes whether the bet was successful.
+/* PUT: route handling playing a card
+ * request body must have a card object.sends back a message and gamestate.
+ * Message will describes whether the bet was succesful.
+ */
 router.put("/:id/bet", (req, res, next) => {
   let currentGame = activeGames.get(req.params.id);
-  let userID = req.user._id; //placeholder because we don't know how cookies work
+  let userID = req.user._id;
   let betAmount = req.body.bet;
-  // bet (yet to be implemented) needs to check if 1. it's this users turn 2. this bet amound is allowed (only a problem for the last player)
   let message = currentGame.bet(userID, +betAmount);
-  // update the DB
   if (currentGame) {
     let response = {
       message: message,
@@ -234,12 +233,9 @@ router.put("/:id/bet", (req, res, next) => {
     };
     req.io.in(req.params.id).emit("update");
     res.send({ alert: message });
-    // delete response.state.hand;
-    // console.log(response);
   } else {
     res.send({ alert: "No game found" });
   }
-  //res.send({message: message, state: currentGame.getPlayerState(userID)});
 });
 
 module.exports = router;

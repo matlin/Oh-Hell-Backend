@@ -12,7 +12,7 @@ db.once("open", function() {
   console.log("Users routes are connected!");
 });
 
-// TODO: add additional field for games a user is in?
+// User Schema
 const User = mongoose.model("User", {
   username: { type: String, index: { unique: true } },
   email: { type: String, unique: true },
@@ -24,8 +24,10 @@ router.get("/", (req, res, next) => {
   res.send("respond with a resource");
 });
 
-// TODO: make user cookie a hashed ID, not the ID assigned by the database.
-// A route for registering new users.
+/* POST Route for handling registration. Takes a unique username and a unique
+ * email and a password. Will give the user a cookie if they register
+ * sucessfully.
+ */
 router.post("/register", (req, res, next) => {
   //check req body for username, email, pw, etc and on success set cookie
   if (req.body.username && req.body.password && req.body.email) {
@@ -64,8 +66,9 @@ router.post("/register", (req, res, next) => {
   }
 });
 
-// TODO: make user cookie a hashed ID, not the ID assigned by the database.
-// A route for logging a user in.
+/* POST Route for handling login. Takes an email and passowrd. Will give the
+ * user a cookie if they register succesfully.
+ */
 router.post("/login", (req, res, next) => {
   if (req.cookies.id) {
     const _id = req.cookies.id;
@@ -95,7 +98,7 @@ router.post("/login", (req, res, next) => {
   }
 });
 
-// A route for logging a user out.
+// A route for logging a user out. Clears their cookie.
 router.get("/logout", (req, res, next) => {
   res.clearCookie("id");
   res.send("Succesfully logged out.");
